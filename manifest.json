@@ -4,8 +4,8 @@
 	"author": "fiendrsy",
 	"version": "1.0",
 
-	"description": "Word Tally is a browser extension that counts the number of repetitions of words on a page. Quick analysis of the page content.",
-	"homepage_url": "https://github.com/fiendrsy/word-tally",
+	"description": "a extension that counts words on a page and returns them in context.",
+	"homepage_url": "https://github.com/fiendrsy/wordix",
 
 	"permissions": ["activeTab", "tabs", "storage"],
 
