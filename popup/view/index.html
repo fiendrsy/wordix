@@ -1,0 +1,21 @@
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link rel="stylesheet" href="style.css" />
+		<title>Wordix</title>
+	</head>
+	<body>
+		<div style="display: flex; flex-direction: column">
+			<label for="minimum-repeats">Minimum repeats:</label>
+			<input type="text" id="minimum-repeats" style="width: 100px" />
+			<label for="search-by-word">Search by word:</label>
+			<input type="text" id="search-by-word" style="width: 100px" />
+		</div>
+		<ol id="parsed-words-list"></ol>
+		<button id="parse-button">Parse</button>
+		<script src="../scripts/main.js" type="module"></script>
+		<script src="../scripts/tabs.js" type="module"></script>
+	</body>
+</html>

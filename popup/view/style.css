@@ -1,0 +1,21 @@
+html,
+body {
+	height: 500px !important;
+	width: 300px !important;
+}
+* label {
+	font-weight: bold;
+}
+* button {
+	font-weight: bold;
+}
+ol {
+	padding-left: 5px;
+	margin-bottom: 0.5em;
+	max-height: 300px;
+	overflow-y: auto;
+}
+ol li {
+	margin-bottom: 0.3em;
+	list-style: none;
+}
