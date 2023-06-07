@@ -1,3 +1,5 @@
+"use strict";
+
 document.addEventListener("click", e => {
 	switch (e.target.id) {
 		case "filterTab":

@@ -1,8 +1,17 @@
-import getActiveTab from "../../helpers/get-active-tab.js";
+"use strict";
 
+import getActiveTab from "../../helpers/get-active-tab.js";
+import tabsSendMessage from "../../helpers/tabs-send-message.js";
+
+let activeTab;
 let minRepeats;
 let searchWord;
 let olElement = document.querySelector("#parsed-words-list");
+
+(async () => {
+	let data = await getActiveTab();
+	activeTab = data;
+})();
 
 function insertInDocumentContent([word, count], index) {
 	let liElement = document.createElement("li");
@@ -18,22 +27,20 @@ function insertInDocumentContent([word, count], index) {
 }
 
 async function parseHandler(e) {
-	let activeTab = await getActiveTab();
 	minRepeats = document.querySelector("#minimum-repeats").value.trim();
 	searchWord = document.querySelector("#search-by-word").value.trim();
 	olElement.textContent = "";
-	browser.tabs.sendMessage(
-		activeTab[0].id,
-		{ minRepeats, searchWord },
-		response => {
-			let parsedWords = JSON.parse(response);
-			parsedWords.sort((a, b) => b[1] - a[1]);
-			parsedWords.forEach(insertInDocumentContent);
-		}
-	);
+	let tabId = activeTab[0].id;
+	let message = { minRepeats, searchWord };
+	let response = await tabsSendMessage(tabId, message);
+	let parsedWords = JSON.parse(response);
+	parsedWords.sort((a, b) => b[1] - a[1]);
+	parsedWords.forEach(insertInDocumentContent);
 }
 
-document.querySelector("#parse-button").addEventListener("click", parseHandler);
+document
+	.querySelector("#parse-button")
+	.addEventListener("click", parseHandler);
 document
 	.querySelector("#search-by-word")
 	.addEventListener("input", parseHandler);
