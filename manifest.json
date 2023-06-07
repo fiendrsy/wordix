@@ -15,7 +15,7 @@
 	},
 
 	"background": {
-		"sciprts": ["background.js"]
+		"scripts": ["background.js"]
 	},
 
 	"content_scripts": [
