@@ -1,3 +1,5 @@
+"use strict";
+
 function handler(request, sender, sendResponse) {
 	let data = JSON.stringify(parseWords(request.minRepeats, request.searchWord));
 	sendResponse(data);
