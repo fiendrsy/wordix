@@ -1,13 +1,8 @@
+import getActiveTab from "../../helpers/get-active-tab.js";
+
 let minRepeats;
-let activeTab;
 let searchWord;
 let olElement = document.querySelector("#parsed-words-list");
-
-(async function getActiveTabData() {
-	let queryOption = { active: true, currentWindow: true };
-	let data = await browser.tabs.query(queryOption);
-	activeTab = data;
-})();
 
 function insertInDocumentContent([word, count], index) {
 	let liElement = document.createElement("li");
@@ -23,6 +18,7 @@ function insertInDocumentContent([word, count], index) {
 }
 
 async function parseHandler(e) {
+	let activeTab = await getActiveTab();
 	minRepeats = document.querySelector("#minimum-repeats").value.trim();
 	searchWord = document.querySelector("#search-by-word").value.trim();
 	olElement.textContent = "";
