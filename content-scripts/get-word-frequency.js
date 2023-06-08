@@ -1,11 +1,11 @@
 "use strict";
 
 function handler(request, sender, sendResponse) {
-	let data = JSON.stringify(parseWords(request.minRepeats, request.searchWord));
+	let data = JSON.stringify(getWordFrequency(request.minRepeats, request.searchWord));
 	sendResponse(data);
 }
 
-function parseWords(minRepeats, searchWord) {
+function getWordFrequency(minRepeats, searchWord) {
 	let collectionOfWords = {};
 	let articles = ["an", "a", "the"];
 	let correctWords = document.body.innerText
@@ -26,7 +26,9 @@ function parseWords(minRepeats, searchWord) {
 		let words = counter.filter(arr => arr[1] >= n);
 		return words;
 	}
-	let word = counter.filter(arr => arr[0] === searchWord.toLowerCase());
+	let word = counter.filter(
+		arr => arr[0] === searchWord.toLowerCase() && arr[1] >= n
+	);
 	return word;
 }
 
