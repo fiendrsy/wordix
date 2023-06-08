@@ -21,7 +21,7 @@
 	"content_scripts": [
 		{
 			"run_at": "document_start",
-			"js": ["content-scripts/parse-words.js"],
+			"js": ["content-scripts/get-word-frequency.js"],
 			"matches": ["<all_urls>"]
 		}
 	]
