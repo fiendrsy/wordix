@@ -1,47 +1,60 @@
 "use strict";
 
+const UPPERCASE_A_CODE = 65;
+const UPPERCASE_Z_CODE = 90;
+const LOWERCASE_A_CODE = 97;
+const LOWERCASE_Z_CODE = 122;
+
 function handler(request, sender, sendResponse) {
-	let data = JSON.stringify(getWordFrequency(request.minRepeats, request.searchWord));
+	let searchWord = request.searchWord;
+	let minRepeats = request.minRepeats;
+	let num = minRepeats ? +minRepeats : 1;
+	let wordFrequency = getWordFrequency(num);
+	let data = searchWord
+		? JSON.stringify(isSearchedWord(searchWord, wordFrequency))
+		: JSON.stringify(wordFrequency);
 	sendResponse(data);
 }
 
-function getWordFrequency(minRepeats, searchWord) {
+function getWordFrequency(num) {
 	let collectionOfWords = {};
+	let content = document.body.innerText;
+	let correctWords = validatePageContent(content);
+	for (let word of correctWords) {
+		collectionOfWords[word] = (collectionOfWords[word] || 0) + 1;
+	}
+	let wordFrequency = [];
+	for (let word in collectionOfWords) {
+		wordFrequency.push([word, collectionOfWords[word]]);
+	}
+	let words = wordFrequency.filter(([_, count]) => count >= num);
+	return words;
+}
+
+function isLatinLetter(char) {
+	const charCode = char.charCodeAt();
+	return (
+		(charCode >= UPPERCASE_A_CODE && charCode <= UPPERCASE_Z_CODE) ||
+		(charCode >= LOWERCASE_A_CODE && charCode <= LOWERCASE_Z_CODE)
+	);
+}
+
+function validateChars(char) {
+	return isLatinLetter(char) ? char.toLowerCase() : " ";
+}
+
+function isSearchedWord(searchWord, words) {
+	return words.filter(([word, _]) => word === searchWord);
+}
+
+function validatePageContent(content) {
 	let articles = ["an", "a", "the"];
-	let correctWords = document.body.innerText
+	return content
 		.split("")
 		.map(validateChars)
 		.join("")
 		.split(" ")
 		.filter(word => word.length > 1 && !articles.includes(word));
-	for (let word of correctWords) {
-		collectionOfWords[word] = (collectionOfWords[word] || 0) + 1;
-	}
-	let n = minRepeats ? +minRepeats : 1;
-	let counter = [];
-	for (let word in collectionOfWords) {
-		counter.push([word, collectionOfWords[word]]);
-	}
-	if (!searchWord) {
-		let words = counter.filter(arr => arr[1] >= n);
-		return words;
-	}
-	let word = counter.filter(
-		arr => arr[0] === searchWord.toLowerCase() && arr[1] >= n
-	);
-	return word;
-}
-
-function validateChars(char) {
-	let charCode = char.charCodeAt();
-	if (charCode <= 64) {
-		return " ";
-	} else if (charCode >= 91 && charCode <= 96) {
-		return " ";
-	} else if (charCode >= 123) {
-		return " ";
-	}
-	return char.toLowerCase();
 }
 
 browser.runtime.onMessage.addListener(handler);
