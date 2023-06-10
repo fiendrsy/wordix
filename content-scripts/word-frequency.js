@@ -5,7 +5,7 @@ const UPPERCASE_Z_CODE = 90;
 const LOWERCASE_A_CODE = 97;
 const LOWERCASE_Z_CODE = 122;
 
-function handler(request, sender, sendResponse) {
+function wordFrequencyHandler(request, sender, sendResponse) {
 	let searchWord = request.searchWord;
 	let minRepeats = request.minRepeats;
 	let num = minRepeats ? +minRepeats : 1;
@@ -57,4 +57,4 @@ function validatePageContent(content) {
 		.filter(word => word.length > 1 && !articles.includes(word));
 }
 
-browser.runtime.onMessage.addListener(handler);
+browser.runtime.onMessage.addListener(wordFrequencyHandler);
