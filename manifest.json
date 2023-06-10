@@ -7,7 +7,13 @@
 	"description": "a extension that counts words on a page and returns them in context.",
 	"homepage_url": "https://github.com/fiendrsy/wordix",
 
-	"permissions": ["activeTab", "tabs", "storage"],
+	"permissions": [
+		"tabs",
+		"activeTab",
+		"storage",
+		"<all_urls>",
+		"runtime"
+	],
 
 	"browser_action": {
 		"default_title": "Wordix",
@@ -15,13 +21,14 @@
 	},
 
 	"background": {
-		"scripts": ["background/background.js"]
+		"scripts": ["background/background.js"],
+		"type": "module"
 	},
 
 	"content_scripts": [
 		{
 			"run_at": "document_start",
-			"js": ["content-scripts/get-word-frequency.js"],
+			"js": ["content-scripts/word-frequency.js"],
 			"matches": ["<all_urls>"]
 		}
 	]
