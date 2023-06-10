@@ -2,7 +2,8 @@
 
 import getActiveTab from "../../helpers/get-active-tab.js";
 import tabsSendMessage from "../../helpers/tabs-send-message.js";
-import { readFromStorage, saveToStorage } from "./storage.js";
+import readFromStorage from "../../storage/read-from-storage.js";
+import saveToStorage from "../../storage/save-to-storage.js";
 
 let activeTab;
 let minRepeats;
@@ -33,25 +34,22 @@ async function parseHandler(e) {
 	minRepeats = document.getElementById("minimum-repeats").value.trim();
 	searchWord = document.getElementById("search-by-word").value.trim();
 	olElement.textContent = "";
-	let tabId = activeTab[0].id;
+	let tabId = activeTab.id;
 	let message = { minRepeats, searchWord };
 	let response = await tabsSendMessage(tabId, message);
-	let parsedWords = JSON.parse(response);
-	parsedWords.sort((a, b) => b[1] - a[1]);
-	parsedWords.forEach(insertInDocumentContent);
+	let wordFrequency = JSON.parse(response);
+	wordFrequency.sort((a, b) => b[1] - a[1]);
+	wordFrequency.forEach(insertInDocumentContent);
 }
 
 async function selectedWordHandler(e) {
 	const date = new Date();
-	let word = e.target.parentNode.innerText.split(" ")[0];
-	let numRepetitions = parseInt(e.target.parentNode.innerText.split(" ")[2]);
-	let liElementId = e.target.parentNode.id;
+	let liElement = e.target.parentNode;
+	let [word, _, count] = liElement.innerText.split(" ");
 	let checkboxElement = e.target;
-	let liElement = document.getElementById(liElementId);
 	let description = {
 		addedDate: date,
-		context: [],
-		numRepetitions,
+		numRepetitions: parseInt(count),
 	};
 	let data = await readFromStorage(word);
 	if (!data) {
