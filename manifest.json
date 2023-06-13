@@ -10,9 +10,7 @@
 	"permissions": [
 		"tabs",
 		"activeTab",
-		"storage",
-		"<all_urls>",
-		"runtime"
+		"storage"
 	],
 
 	"browser_action": {
