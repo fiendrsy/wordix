@@ -19,6 +19,8 @@ export default function parseUrlDomain(url, level) {
 				return domains[1];
 			case "second":
 				return domains[0];
+			default:
+				return "";
 		}
 	}
 	return urlWithoutSchema;
