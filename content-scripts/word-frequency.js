@@ -32,7 +32,7 @@ function getWordFrequency(num) {
 }
 
 function isLatinLetter(char) {
-	const charCode = char.charCodeAt();
+	let charCode = char.charCodeAt();
 	return (
 		(charCode >= UPPERCASE_A_CODE && charCode <= UPPERCASE_Z_CODE) ||
 		(charCode >= LOWERCASE_A_CODE && charCode <= LOWERCASE_Z_CODE)
