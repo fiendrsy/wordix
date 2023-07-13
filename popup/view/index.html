@@ -1,21 +1,93 @@
+<!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<link rel="stylesheet" href="style.css" />
-		<title>Wordix</title>
-	</head>
-	<body>
-		<div style="display: flex; flex-direction: column">
-			<label for="minimum-repeats">Minimum repeats:</label>
-			<input type="text" id="minimum-repeats" style="width: 100px" />
-			<label for="search-by-word">Search by word:</label>
-			<input type="text" id="search-by-word" style="width: 100px" />
-		</div>
-		<ol id="parsed-words-list"></ol>
-		<button id="parse-button">Parse</button>
-		<script src="../scripts/main.js" type="module"></script>
-		<script src="../scripts/tab-switching.js" type="module"></script>
-	</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <title>Document</title>
+  </head>
+  <body>
+    <div class="wrapper">
+      <h1 class="main-header">Wordix</h1>
+      <div class="content">
+        <div class="tabs__wrapper">
+
+          <!-- TAB LINKS START-->
+          <div class="tab">
+            <button class="tablinks" id="parseTab">Parse</button>
+            <button class="tablinks" id="sessionTab">Session</button>
+          </div>
+          <!-- TAB LINKS END-->
+
+          <!-- PARSE TAB START -->
+          <div id="parse-tab" class="tabcontent">
+            <div class="tabcontent__wrapper">
+              <p class="current-site-address"></p>
+              <div class="parse-inputs__wrapper">
+                <div class="min-repeats__wrapper">
+                  <label for="min-repeats__input">min rep.</label>
+                  <input type="text" id="min-repeats__input" value="1"/>
+                </div>
+                <div class="search-word__wrapper">
+                  <label for="search-word__input">search word</label>
+                  <input type="text" id="search-word__input" placeholder="watermelon"/>
+                </div>
+              </div>
+              <div class="parse-buttons__wrapper">
+                <button class="parse-button" type="submit">Parse</button>
+              </div>
+              <div class="parsed-words__wrapper">
+                <ol class="parsed-words__list">
+                </ol>
+              </div>
+            </div>
+          </div>
+          <!-- PARSE TAB END-->
+
+		      <!-- SESSION TAB START -->
+          <div id="session-tab" class="tabcontent">
+            <div class="tabcontent__wrapper">
+              <div class="inputs_wrapper"> 
+                <div class="control_wrapper">
+                  <label for="">how much days?</label>
+                  <input type="text" id="session-how-much-days">      
+                </div>
+                <div class="control_wrapper">
+                  <label for="">min. repeats</label>
+                  <input type="text" id="session-min-repeats"> 
+                </div>
+                <div class="control_wrapper">
+                  <label for="">limit words</label>
+                  <input type="text" id="session-limit-words">
+                </div>
+                <div class="control_wrapper">
+                  <label for="">by site</label>
+                  <input type="text" id="session-by-site">
+                </div>
+                <div class="control_wrapper">
+                  <label for="">search word</label>
+                  <input type="text" id="session-search-word">
+                </div>
+              </div>
+              <button class="upload-button">Upload</button>
+              <div class="parsed-words__wrapper">
+                <ol class="parsed-words__list" id="session-list"></ol>
+              </div>
+            </div>
+          </div>
+          <!-- SESSION TAB END-->
+
+        </div>
+      </div>
+    </div>
+    <script src="../scripts/main.js" type="module"></script> 
+    <script src="../scripts/session.js" type="module"></script> 
+    <script src="../scripts/tab-switching.js"></script>
 </html>
