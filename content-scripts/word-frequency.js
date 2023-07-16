@@ -1,5 +1,6 @@
 "use strict";
 
+const ARTICLES = ["an", "a", "the"];
 const UPPERCASE_A_CODE = 65;
 const UPPERCASE_Z_CODE = 90;
 const LOWERCASE_A_CODE = 97;
@@ -17,9 +18,8 @@ function wordFrequencyHandler(request, sender, sendResponse) {
 }
 
 function getWordFrequency(num) {
-	let collectionOfWords = {};
-	let content = document.body.innerText;
-	let correctWords = validatePageContent(content);
+	const collectionOfWords = {};
+	let correctWords = validatePageContent(document.body.innerText);
 	for (let word of correctWords) {
 		collectionOfWords[word] = (collectionOfWords[word] || 0) + 1;
 	}
@@ -27,8 +27,7 @@ function getWordFrequency(num) {
 	for (let word in collectionOfWords) {
 		wordFrequency.push([word, collectionOfWords[word]]);
 	}
-	let words = wordFrequency.filter(([_, count]) => count >= num);
-	return words;
+	return wordFrequency.filter(([_, frequency]) => frequency >= num);
 }
 
 function isLatinLetter(char) {
@@ -44,17 +43,16 @@ function validateChars(char) {
 }
 
 function isSearchedWord(searchWord, words) {
-	return words.filter(([word, _]) => word === searchWord);
+	return words.filter(([word]) => word === searchWord);
 }
 
 function validatePageContent(content) {
-	let articles = ["an", "a", "the"];
 	return content
 		.split("")
 		.map(validateChars)
 		.join("")
 		.split(" ")
-		.filter(word => word.length > 1 && !articles.includes(word));
+		.filter(word => word.length > 1 && !ARTICLES.includes(word));
 }
 
 browser.runtime.onMessage.addListener(wordFrequencyHandler);
