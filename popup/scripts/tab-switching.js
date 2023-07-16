@@ -1,17 +1,17 @@
 "use strict";
 
-document.addEventListener("click", e => {
+document.addEventListener("click", (e) => {
 	switch (e.target.id) {
-		case "filterTab":
-			openTab(e, "filter-tab");
+		case "parseTab":
+			openTab(e, "parse-tab");
 			break;
-		case "accountTab":
-			openTab(e, "account-tab");
+		case "sessionTab":
+			openTab(e, "session-tab");
 			break;
 	}
 });
 
-document.querySelector("#filterTab").click();
+document.querySelector("#parseTab").click();
 
 function openTab(e, tabName) {
 	let tabcontent = document.querySelectorAll(".tabcontent");
