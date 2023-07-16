@@ -8,76 +8,30 @@ import tabsSendMessage from "../helpers/tabs-send-message.js";
 import readFromStorage from "../storage/read-from-storage.js";
 import saveToStorage from "../storage/save-to-storage.js";
 
-browser.tabs.onUpdated.addListener(tabsUpdateHandler);
+// [ ] fix createAt logic 
+
+const BAD_DOMAINS = ["twitch", "youtube"];
 
 async function tabsUpdateHandler(idUpdatedTab, changeInfo) {
-	if (changeInfo.status === "complete") {
-		let activeTab = await getActiveTab();
-		let tabId = activeTab.id;
-		let tabUrl = activeTab.url;
-		if (tabId === idUpdatedTab) {
-			const urlData = collectUrlData(tabUrl);
-			let storageData = await readFromStorage(urlData.secondDomain);
-			await autoUpdate(storageData, tabId, urlData);
-			if (!storageData) {
-				let response = await tabsSendMessage(tabId, {});
-				let wordFrequency = JSON.parse(response);
-				const initialData = generateInitialData(
-					urlData.secondDomain,
-					urlData.thirdDomain,
-					wordFrequency
-				);
-				initialData[urlData.secondDomain].content.paths.push(urlData.path);
-				await saveToStorage(initialData);
-			}
-		}
+	let activeTab = await getActiveTab();
+	let urlData = collectUrlData(activeTab.url);
+	if (
+		changeInfo.status !== "complete" ||
+		activeTab.id !== idUpdatedTab ||
+		BAD_DOMAINS.includes(urlData.secondDomain)
+	) {
+		return;
 	}
+	let storageData = await readFromStorage(urlData.secondDomain);
+	await autoUpdate(storageData, activeTab.id, urlData);
 }
 
 async function autoUpdate(storageData, tabId, currUrlData) {
 	if (!storageData) {
+		addNewContent(tabId, currUrlData);
 		return;
 	}
-	const currDate = getCurrentDate();
-	const { wordFrequencyFromStorage, pathsFromStorage, thirdDomainFromStorage } =
-		getStorageContent(storageData);
-	let response = await tabsSendMessage(tabId, {});
-	let wordFrequency = JSON.parse(response);
-	const words = [];
-	const missingWords = [];
-	const matchedWords = {};
-	for (let [word, _] of wordFrequencyFromStorage) {
-		words.push(word);
-	}
-	for (let [word, count] of wordFrequency) {
-		if (!words.includes(word)) {
-			missingWords.push([word, count]);
-		} else if (
-			currUrlData.thirdDomain !== thirdDomainFromStorage ||
-			!pathsFromStorage.includes(currUrlData.path)
-		) {
-			matchedWords[word] = count;
-		}
-	}
-
-	if (!missingWords.length) {
-		return;
-	}
-	const result = updateWordFrequencyWithMissing(
-		missingWords,
-		matchedWords,
-		wordFrequencyFromStorage
-	);
-	const initialData = generateInitialData(
-		currUrlData.secondDomain,
-		currUrlData.thirdDomain,
-		wordFrequencyFromStorage
-	);
-	const { content } = initialData[currUrlData.secondDomain];
-	content.wordFrequency = result;
-	content.updatedAt = [currDate];
-	content.paths.push(...pathsFromStorage, currUrlData.path);
-	await saveToStorage(initialData);
+	processing(getStorageContent(storageData), currUrlData, tabId);
 }
 
 function updateWordFrequencyWithMissing(
@@ -96,44 +50,107 @@ function updateWordFrequencyWithMissing(
 	return updatedWordFrequency;
 }
 
-function generateInitialData(secondDomain, thirdDomain, wordFrequency) {
+function generateInitialData(secondDomain, wordFrequency) {
 	const currDate = getCurrentDate();
-	const result = {
+	return {
 		[secondDomain]: {
 			createdAt: [currDate],
-			favorite: [],
-			content: {
-				updatedAt: [],
-				wordFrequency,
-				paths: [],
-				thirdDomain,
-			},
+			selectedWords: [],
+			wordFrequency,
+			paths: [],
+			thirdDomains: [],
 		},
 	};
-	return result;
 }
 
 function collectUrlData(tabUrl) {
 	let thirdDomain = parseUrlDomain(tabUrl, "third");
 	let path = parseUrlPath(tabUrl);
 	let secondDomain = parseUrlDomain(tabUrl, "second");
-	const result = {
+	return {
 		thirdDomain,
 		secondDomain,
 		path,
 	};
-	return result;
 }
 
 function getStorageContent(storageData) {
-	const content = storageData.content;
-	let wordFrequencyFromStorage = content.wordFrequency;
-	let pathsFromStorage = content.paths;
-	let thirdDomainFromStorage = content.thirdDomain;
-	const result = {
+	// change the function name
+	let wordFrequencyFromStorage = storageData.wordFrequency;
+	let pathsFromStorage = storageData.paths;
+	let thirdDomainsFromStorage = storageData.thirdDomains;
+	return {
 		wordFrequencyFromStorage,
 		pathsFromStorage,
-		thirdDomainFromStorage,
+		thirdDomainsFromStorage,
 	};
-	return result;
 }
+
+async function addNewContent(
+	tabId,
+	{ secondDomain, path, thirdDomain } = urlData
+) {
+	let response = await tabsSendMessage(tabId, {});
+	let wordFrequency = JSON.parse(response);
+	const initialData = generateInitialData(secondDomain, wordFrequency);
+	initialData[secondDomain].paths.push(path);
+	initialData[secondDomain].thirdDomains.push(thirdDomain);
+	await saveToStorage(initialData);
+}
+
+async function updateContent(
+	updatedWordFrequency,
+	initialData,
+	secondDomain,
+	path,
+	thirdDomainsFromStorage,
+	pathsFromStorage
+) {
+	initialData[secondDomain].wordFrequency = updatedWordFrequency;
+	initialData[secondDomain].paths = [...pathsFromStorage, path];
+	initialData[secondDomain].thirdDomains = [...thirdDomainsFromStorage];
+	await saveToStorage(initialData);
+}
+
+async function processing(
+	{
+		wordFrequencyFromStorage,
+		pathsFromStorage,
+		thirdDomainsFromStorage,
+	} = storageData,
+	{ path, secondDomain } = currUrlData,
+	tabId
+) {
+	let response = await tabsSendMessage(tabId, {});
+	let wordFrequency = JSON.parse(response);
+	const wordsFromStorage = [];
+	const missingWords = [];
+	const matchedWords = {};
+	for (let [word] of wordFrequencyFromStorage) {
+		wordsFromStorage.push(word);
+	}
+	for (let [word, count] of wordFrequency) {
+		if (!wordsFromStorage.includes(word)) {
+			missingWords.push([word, count]);
+		} else if (!pathsFromStorage.includes(path)) {
+			matchedWords[word] = count;
+		}
+	}
+	if (!missingWords.length && !Object.values(matchedWords).length) {
+		return;
+	}
+	updateContent(
+		updateWordFrequencyWithMissing(
+			missingWords,
+			matchedWords,
+			wordFrequencyFromStorage
+		),
+		generateInitialData(secondDomain, wordFrequencyFromStorage),
+		secondDomain,
+		path,
+		thirdDomainsFromStorage,
+		pathsFromStorage
+	);
+}
+
+browser.tabs.onUpdated.addListener(tabsUpdateHandler);
