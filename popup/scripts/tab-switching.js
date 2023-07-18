@@ -11,7 +11,7 @@ document.addEventListener("click", (e) => {
 	}
 });
 
-document.querySelector("#parseTab").click();
+document.getElementById("parseTab").click();
 
 function openTab(e, tabName) {
 	let tabcontent = document.querySelectorAll(".tabcontent");
