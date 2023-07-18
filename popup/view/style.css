@@ -268,3 +268,15 @@ body {
 	margin-bottom: 16px;
 	width: 210px;
 }
+
+.context-link {
+	color: white;
+}
+
+.context-link:hover {
+	color: rgba(218, 115, 85, 1);
+}
+
+.context-link:visited {
+	text-decoration: none;
+}
