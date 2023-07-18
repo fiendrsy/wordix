@@ -8,21 +8,15 @@ import tabsSendMessage from "../helpers/tabs-send-message.js";
 import readFromStorage from "../storage/read-from-storage.js";
 import saveToStorage from "../storage/save-to-storage.js";
 
-// [ ] fix createAt logic 
-
-const BAD_DOMAINS = ["twitch", "youtube"];
+const BAD_DOMAINS = ["twitch", "youtube", "monkeytype", "github"];
 
 async function tabsUpdateHandler(idUpdatedTab, changeInfo) {
-	let activeTab = await getActiveTab();
-	let urlData = collectUrlData(activeTab.url);
-	if (
-		changeInfo.status !== "complete" ||
-		activeTab.id !== idUpdatedTab ||
-		BAD_DOMAINS.includes(urlData.secondDomain)
-	) {
+	const activeTab = await getActiveTab();
+	const urlData = collectUrlData(activeTab.url);
+	if (changeInfo.status !== "complete" || activeTab.id !== idUpdatedTab || BAD_DOMAINS.includes(urlData.secondDomain)) {
 		return;
 	}
-	let storageData = await readFromStorage(urlData.secondDomain);
+	const storageData = await readFromStorage(urlData.secondDomain);
 	await autoUpdate(storageData, activeTab.id, urlData);
 }
 
@@ -31,14 +25,10 @@ async function autoUpdate(storageData, tabId, currUrlData) {
 		addNewContent(tabId, currUrlData);
 		return;
 	}
-	processing(getStorageContent(storageData), currUrlData, tabId);
+	processing(currUrlData, tabId);
 }
 
-function updateWordFrequencyWithMissing(
-	missingWords,
-	matchedWords,
-	oldWordFrequency
-) {
+function updateWordFrequencyWithMissing(missingWords, matchedWords, oldWordFrequency) {
 	const updatedWordFrequency = oldWordFrequency.map(([word, count]) => {
 		if (word in matchedWords) {
 			let sum = count + matchedWords[word];
@@ -64,9 +54,9 @@ function generateInitialData(secondDomain, wordFrequency) {
 }
 
 function collectUrlData(tabUrl) {
-	let thirdDomain = parseUrlDomain(tabUrl, "third");
-	let path = parseUrlPath(tabUrl);
-	let secondDomain = parseUrlDomain(tabUrl, "second");
+	const thirdDomain = parseUrlDomain(tabUrl, "third");
+	const path = parseUrlPath(tabUrl);
+	const secondDomain = parseUrlDomain(tabUrl, "second");
 	return {
 		thirdDomain,
 		secondDomain,
@@ -74,82 +64,54 @@ function collectUrlData(tabUrl) {
 	};
 }
 
-function getStorageContent(storageData) {
-	// change the function name
-	let wordFrequencyFromStorage = storageData.wordFrequency;
-	let pathsFromStorage = storageData.paths;
-	let thirdDomainsFromStorage = storageData.thirdDomains;
-	return {
-		wordFrequencyFromStorage,
-		pathsFromStorage,
-		thirdDomainsFromStorage,
-	};
-}
-
-async function addNewContent(
-	tabId,
-	{ secondDomain, path, thirdDomain } = urlData
-) {
-	let response = await tabsSendMessage(tabId, {});
-	let wordFrequency = JSON.parse(response);
+async function addNewContent(tabId, { secondDomain, path, thirdDomain } = urlData) {
+	const response = await tabsSendMessage(tabId, {});
+	const wordFrequency = JSON.parse(response);
 	const initialData = generateInitialData(secondDomain, wordFrequency);
 	initialData[secondDomain].paths.push(path);
 	initialData[secondDomain].thirdDomains.push(thirdDomain);
 	await saveToStorage(initialData);
 }
 
-async function updateContent(
-	updatedWordFrequency,
-	initialData,
-	secondDomain,
-	path,
-	thirdDomainsFromStorage,
-	pathsFromStorage
-) {
-	initialData[secondDomain].wordFrequency = updatedWordFrequency;
-	initialData[secondDomain].paths = [...pathsFromStorage, path];
-	initialData[secondDomain].thirdDomains = [...thirdDomainsFromStorage];
-	await saveToStorage(initialData);
+async function updateContent(updatedWordFrequency, thirdDomain, secondDomain, path) {
+	const data = await readFromStorage(secondDomain);
+	const options = {
+		[secondDomain]: {
+			createdAt: data.createdAt,
+			selectedWords: [...data.selectedWords],
+			wordFrequency: updatedWordFrequency,
+			paths: [...data.paths, path],
+			thirdDomains: [...data.thirdDomains],
+		},
+	};
+	if (!data.thirdDomains.includes(thirdDomain)) {
+		options[secondDomain].thirdDomains.push(thirdDomain);
+	}
+	await saveToStorage(options);
 }
 
-async function processing(
-	{
-		wordFrequencyFromStorage,
-		pathsFromStorage,
-		thirdDomainsFromStorage,
-	} = storageData,
-	{ path, secondDomain } = currUrlData,
-	tabId
-) {
-	let response = await tabsSendMessage(tabId, {});
-	let wordFrequency = JSON.parse(response);
-	const wordsFromStorage = [];
+async function processing({ path, secondDomain, thirdDomain } = currUrlData, tabId) {
+	const storageData = await readFromStorage(secondDomain);
+	const response = await tabsSendMessage(tabId, {});
+	const currWordFrequency = JSON.parse(response);
+	const wordsFromStorage = storageData.wordFrequency.map(([word]) => word);
 	const missingWords = [];
 	const matchedWords = {};
-	for (let [word] of wordFrequencyFromStorage) {
-		wordsFromStorage.push(word);
-	}
-	for (let [word, count] of wordFrequency) {
+	for (let [word, count] of currWordFrequency) {
 		if (!wordsFromStorage.includes(word)) {
 			missingWords.push([word, count]);
-		} else if (!pathsFromStorage.includes(path)) {
+		} else if (!storageData.paths.includes(path)) {
 			matchedWords[word] = count;
 		}
 	}
-	if (!missingWords.length && !Object.values(matchedWords).length) {
+	if (missingWords.length === 0 && Object.values(matchedWords).length === 0) {
 		return;
 	}
 	updateContent(
-		updateWordFrequencyWithMissing(
-			missingWords,
-			matchedWords,
-			wordFrequencyFromStorage
-		),
-		generateInitialData(secondDomain, wordFrequencyFromStorage),
+		updateWordFrequencyWithMissing(missingWords, matchedWords, storageData.wordFrequency),
+		thirdDomain,
 		secondDomain,
-		path,
-		thirdDomainsFromStorage,
-		pathsFromStorage
+		path
 	);
 }
 
