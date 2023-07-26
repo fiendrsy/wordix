@@ -14,8 +14,8 @@ document.addEventListener("click", (e) => {
 document.getElementById("parseTab").click();
 
 function openTab(e, tabName) {
-	let tabcontent = document.querySelectorAll(".tabcontent");
-	let tablinks = document.querySelectorAll(".tablinks");
+	const tabcontent = document.querySelectorAll(".tabcontent");
+	const tablinks = document.querySelectorAll(".tablinks");
 	for (let el of tabcontent) {
 		el.style.display = "none";
 	}
