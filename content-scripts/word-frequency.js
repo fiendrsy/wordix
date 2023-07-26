@@ -10,8 +10,8 @@ function wordFrequencyHandler(request, sender, sendResponse) {
 	let searchWord = request.searchWord;
 	let minRepeats = request.minRepeats;
 	let num = minRepeats ? +minRepeats : 1;
-	let wordFrequency = getWordFrequency(num);
-	let data = searchWord
+	const wordFrequency = getWordFrequency(num);
+	const data = searchWord
 		? JSON.stringify(isSearchedWord(searchWord, wordFrequency))
 		: JSON.stringify(wordFrequency);
 	sendResponse(data);
@@ -19,11 +19,11 @@ function wordFrequencyHandler(request, sender, sendResponse) {
 
 function getWordFrequency(num) {
 	const collectionOfWords = {};
-	let correctWords = validatePageContent(document.body.innerText);
+	const correctWords = validatePageContent(document.body.innerText);
 	for (let word of correctWords) {
 		collectionOfWords[word] = (collectionOfWords[word] || 0) + 1;
 	}
-	let wordFrequency = [];
+	const wordFrequency = [];
 	for (let word in collectionOfWords) {
 		wordFrequency.push([word, collectionOfWords[word]]);
 	}
