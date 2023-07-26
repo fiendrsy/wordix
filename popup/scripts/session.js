@@ -3,16 +3,16 @@
 import readAllFromStorage from "../../storage/read-all-from-storage.js";
 import readFromStorage from "../../storage/read-from-storage.js";
 
-let olElement = document.getElementById("session-list");
 let searchWord;
 let minRepeats;
 let limitWords;
 let byDomain;
+let olElement = document.getElementById("session-list");
 
 async function uploadHandler() {
 	olElement.textContent = "";
 	const wordFrequency = await getAllWordFrequencyFromStorage();
-	const dataInputs = collectDataInputs(wordFrequency.length);
+	const dataInputs = collectDataInputs();
 	processing(dataInputs, wordFrequency);
 }
 
@@ -44,7 +44,7 @@ function concatWordFrequency(wordFrequency) {
 }
 
 function insertContent([word, frequency]) {
-	let liElement = document.createElement("li");
+	const liElement = document.createElement("li");
 	liElement.textContent = `${word} -> ${frequency} times`;
 	olElement.append(liElement);
 }
@@ -52,28 +52,28 @@ function insertContent([word, frequency]) {
 async function isSearchWord() {
 	olElement.textContent = "";
 	const wordFrequency = await getAllWordFrequencyFromStorage();
-	const dataInputs = collectDataInputs(wordFrequency.length);
+	const dataInputs = collectDataInputs();
 	const result = wordFrequency.filter(([word]) => word === dataInputs.searchWord);
 	processing(dataInputs, result);
 }
 
-function collectDataInputs(wordFrequencyLength) {
+function collectDataInputs() {
 	minRepeats = document.getElementById("session-min-repeats").value.trim();
 	limitWords = document.getElementById("session-limit-words").value.trim();
 	searchWord = document.getElementById("session-search-word").value.trim();
-	let min = minRepeats ? +minRepeats : 1;
-	let limit = limitWords ? +limitWords : wordFrequencyLength;
 	return {
-		min,
-		limit,
+		minRepeats,
+		limitWords,
 		searchWord,
 	};
 }
 
-function processing({ limit, min } = dataInputs, wordFrequency) {
+function processing({ minRepeats, limitWords } = dataInputs, wordFrequency) {
+	const min = minRepeats ? +minRepeats : 1;
+	const limit = limitWords ? +limitWords : wordFrequency.length;
 	const result = wordFrequency.filter(([_, frequency]) => frequency >= min);
 	result.sort((a, b) => b[1] - a[1]);
-	let len = result.length < limit ? result.length : limit;
+	const len = result.length < limit ? result.length : limit;
 	for (let i = 0; i < len; ++i) {
 		insertContent(result[i]);
 	}

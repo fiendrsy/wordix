@@ -12,7 +12,7 @@ let searchWord;
 const olElement = document.querySelector(".parsed-words__list");
 const currSite = document.querySelector(".current-site-address");
 
-(async () => {
+(async function init() {
 	const data = await getActiveTab();
 	activeTab = data;
 	currSite.textContent = parseUrlDomain(activeTab.url);
