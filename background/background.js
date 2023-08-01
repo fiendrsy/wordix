@@ -97,11 +97,11 @@ async function processing({ path, secondDomain, thirdDomain } = currUrlData, tab
 	const wordsFromStorage = storageData.wordFrequency.map(([word]) => word);
 	const missingWords = [];
 	const matchedWords = {};
-	for (let [word, count] of currWordFrequency) {
+	for (let [word, frequency] of currWordFrequency) {
 		if (!wordsFromStorage.includes(word)) {
-			missingWords.push([word, count]);
+			missingWords.push([word, frequency]);
 		} else if (!storageData.paths.includes(path)) {
-			matchedWords[word] = count;
+			matchedWords[word] = frequency;
 		}
 	}
 	if (missingWords.length === 0 && Object.values(matchedWords).length === 0) {
