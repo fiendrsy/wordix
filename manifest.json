@@ -1,33 +1,29 @@
 {
-	"manifest_version": 2,
-	"name": "Wordix",
-	"author": "fiendrsy",
-	"version": "1.0",
+  "manifest_version": 2,
+  "name": "Wordix",
+  "author": "fiendrsy",
+  "version": "1.0",
 
-	"description": "a extension that counts words on a page and returns them in context.",
-	"homepage_url": "https://github.com/fiendrsy/wordix",
+  "description": "a extension that counts words on a page and returns them in context.",
+  "homepage_url": "https://github.com/fiendrsy/wordix",
 
-	"permissions": [
-		"tabs",
-		"activeTab",
-		"storage"
-	],
+  "permissions": ["tabs", "activeTab", "storage"],
 
-	"browser_action": {
-		"default_title": "Wordix",
-		"default_popup": "popup/view/index.html"
-	},
+  "browser_action": {
+    "default_title": "Wordix",
+    "default_popup": "popup/view/index.html"
+  },
 
-	"background": {
-		"scripts": ["background/background.js"],
-		"type": "module"
-	},
+  "background": {
+    "scripts": ["background/background.js"],
+    "type": "module"
+  },
 
-	"content_scripts": [
-		{
-			"run_at": "document_start",
-			"js": ["content-scripts/word-frequency.js"],
-			"matches": ["<all_urls>"]
-		}
-	]
+  "content_scripts": [
+    {
+      "run_at": "document_start",
+      "js": ["content-scripts/word-frequency.js"],
+      "matches": ["<all_urls>"]
+    }
+  ]
 }
