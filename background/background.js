@@ -30,10 +30,7 @@ async function autoUpdate(storageData, tabId, currUrlData) {
 
 function updateWordFrequencyWithMissing(missingWords, matchedWords, oldWordFrequency) {
   const updatedWordFrequency = oldWordFrequency.map(([word, frequency]) => {
-    if (word in matchedWords) {
-      let sum = frequency + matchedWords[word];
-      return [word, sum];
-    }
+    if (word in matchedWords) frequency += matchedWords[word];
     return [word, frequency];
   });
   updatedWordFrequency.push(...missingWords);
@@ -91,12 +88,12 @@ async function updateContent(updatedWordFrequency, thirdDomain, secondDomain, pa
 }
 
 async function processing({ path, secondDomain, thirdDomain } = currUrlData, tabId) {
+  const missingWords = [];
+  const matchedWords = {};
   const storageData = await readFromStorage(secondDomain);
   const response = await tabsSendMessage(tabId, {});
   const currWordFrequency = JSON.parse(response);
   const wordsFromStorage = storageData.wordFrequency.map(([word]) => word);
-  const missingWords = [];
-  const matchedWords = {};
   for (let [word, frequency] of currWordFrequency) {
     if (!wordsFromStorage.includes(word)) {
       missingWords.push([word, frequency]);
