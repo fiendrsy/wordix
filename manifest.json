@@ -4,7 +4,7 @@
   "author": "fiendrsy",
   "version": "1.0",
 
-  "description": "a extension that counts words on a page and returns them in context.",
+  "description": "Wordix is designed to help you track the most popular words on a website page and watch your session!",
   "homepage_url": "https://github.com/fiendrsy/wordix",
 
   "permissions": ["tabs", "activeTab", "storage"],
