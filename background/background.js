@@ -13,7 +13,11 @@ const BAD_DOMAINS = ["twitch", "youtube", "monkeytype", "github"];
 async function tabsUpdateHandler(idUpdatedTab, changeInfo) {
   const activeTab = await getActiveTab();
   const urlData = collectUrlData(activeTab.url);
-  if (changeInfo.status !== "complete" || activeTab.id !== idUpdatedTab || BAD_DOMAINS.includes(urlData.secondDomain)) {
+  if (
+    changeInfo.status !== "complete" ||
+    activeTab.id !== idUpdatedTab ||
+    BAD_DOMAINS.includes(urlData.secondDomain)
+  ) {
     return;
   }
   const storageData = await readFromStorage(urlData.secondDomain);
@@ -81,9 +85,8 @@ async function updateContent(updatedWordFrequency, thirdDomain, secondDomain, pa
       thirdDomains: [...data.thirdDomains],
     },
   };
-  if (!data.thirdDomains.includes(thirdDomain)) {
+  if (!data.thirdDomains.includes(thirdDomain))
     options[secondDomain].thirdDomains.push(thirdDomain);
-  }
   await saveToStorage(options);
 }
 
@@ -95,15 +98,11 @@ async function processing({ path, secondDomain, thirdDomain } = currUrlData, tab
   const currWordFrequency = JSON.parse(response);
   const wordsFromStorage = storageData.wordFrequency.map(([word]) => word);
   for (let [word, frequency] of currWordFrequency) {
-    if (!wordsFromStorage.includes(word)) {
-      missingWords.push([word, frequency]);
-    } else if (!storageData.paths.includes(path)) {
+    if (!wordsFromStorage.includes(word)) missingWords.push([word, frequency]);
+    if (!storageData.paths.includes(path) && wordsFromStorage.includes(word))
       matchedWords[word] = frequency;
-    }
   }
-  if (missingWords.length === 0 && Object.values(matchedWords).length === 0) {
-    return;
-  }
+  if (missingWords.length === 0 && Object.values(matchedWords).length === 0) return;
   updateContent(
     updateWordFrequencyWithMissing(missingWords, matchedWords, storageData.wordFrequency),
     thirdDomain,

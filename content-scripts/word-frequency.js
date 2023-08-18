@@ -11,7 +11,9 @@ function wordFrequencyHandler(request, sender, sendResponse) {
   let minRepeats = request.minRepeats;
   let num = minRepeats ? +minRepeats : 1;
   const wordFrequency = getWordFrequency(num);
-  const data = searchWord ? JSON.stringify(isSearchedWord(searchWord, wordFrequency)) : JSON.stringify(wordFrequency);
+  const data = searchWord
+    ? JSON.stringify(isSearchedWord(searchWord, wordFrequency))
+    : JSON.stringify(wordFrequency);
   sendResponse(data);
 }
 
