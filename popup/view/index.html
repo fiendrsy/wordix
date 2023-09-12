@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -18,7 +18,6 @@
       <h1 class="main-header">Wordix</h1>
       <div class="content">
         <div class="tabs__wrapper">
-
           <!-- TAB LINKS START-->
           <div class="tab">
             <button class="tablinks" id="parseTab">Parse</button>
@@ -33,47 +32,46 @@
               <div class="parse-inputs__wrapper">
                 <div class="min-repeats__wrapper">
                   <label for="min-repeats__input">min rep.</label>
-                  <input type="text" id="min-repeats__input" value="1"/>
+                  <input type="text" id="min-repeats__input" value="1" />
                 </div>
                 <div class="search-word__wrapper">
                   <label for="search-word__input">search word</label>
-                  <input type="text" id="search-word__input" placeholder="watermelon"/>
+                  <input type="text" id="search-word__input" placeholder="watermelon" />
                 </div>
               </div>
               <div class="parse-buttons__wrapper">
                 <button class="parse-button" type="submit">Parse</button>
               </div>
               <div class="parsed-words__wrapper">
-                <ol class="parsed-words__list">
-                </ol>
+                <ol class="parsed-words__list"></ol>
               </div>
             </div>
           </div>
           <!-- PARSE TAB END-->
 
-		      <!-- SESSION TAB START -->
+          <!-- SESSION TAB START -->
           <div id="session-tab" class="tabcontent">
             <div class="tabcontent__wrapper">
               <div class="inputs_wrapper">
                 <div class="control_wrapper">
                   <label for="">how much days?</label>
-                  <input type="text" id="session-how-much-days">
+                  <input type="text" id="session-how-much-days" />
                 </div>
                 <div class="control_wrapper">
                   <label for="">min. repeats</label>
-                  <input type="text" id="session-min-repeats">
+                  <input type="text" id="session-min-repeats" />
                 </div>
                 <div class="control_wrapper">
                   <label for="">limit words</label>
-                  <input type="text" id="session-limit-words">
+                  <input type="text" id="session-limit-words" />
                 </div>
                 <div class="control_wrapper">
                   <label for="">by site</label>
-                  <input type="text" id="session-by-site">
+                  <input type="text" id="session-by-site" />
                 </div>
                 <div class="control_wrapper">
                   <label for="">search word</label>
-                  <input type="text" id="session-search-word">
+                  <input type="text" id="session-search-word" />
                 </div>
               </div>
               <button class="upload-button">Upload</button>
@@ -83,11 +81,11 @@
             </div>
           </div>
           <!-- SESSION TAB END-->
-
         </div>
       </div>
     </div>
     <script src="../scripts/parse.js" type="module"></script>
     <script src="../scripts/session.js" type="module"></script>
     <script src="../scripts/tab-switching.js"></script>
+  </body>
 </html>
