@@ -1,27 +1,25 @@
 export default function parseUrlDomain(url, level) {
-  const pattern = /^(?:https?:\/\/)?(?:[^@\/\n]+@)?(?:www\.)?([^:\/?\n]+)/gim;
-  let urlWithoutPath = url.match(pattern);
+  const PATTERN = /^(?:https?:\/\/)?(?:[^@\/\n]+@)?(?:www\.)?([^:\/?\n]+)/gim;
+  let urlWithoutPath = url.match(PATTERN);
   let urlWithoutSchema = urlWithoutPath[0].replace("https://", "");
-  if (level) {
-    let domains = urlWithoutSchema.split(".");
-    if (domains.length > 2) {
-      switch (level) {
-        case "top":
-          return domains[2];
-        case "second":
-          return domains[1];
-        case "third":
-          return domains[0];
-      }
-    }
+  if (!level) return urlWithoutSchema;
+  let domains = urlWithoutSchema.split(".");
+  if (domains.length > 2) {
     switch (level) {
       case "top":
-        return domains[1];
+        return domains[2];
       case "second":
+        return domains[1];
+      case "third":
         return domains[0];
-      default:
-        return "";
     }
   }
-  return urlWithoutSchema;
+  switch (level) {
+    case "top":
+      return domains[1];
+    case "second":
+      return domains[0];
+    default:
+      return "";
+  }
 }
