@@ -37,7 +37,7 @@ function insertInDocumentContent([word, count], index) {
   checkboxElement.addEventListener("change", selectedWordHandler);
 }
 
-async function parseHandler(e) {
+async function parseHandler() {
   minRepeats = document.getElementById("min-repeats__input").value.trim();
   searchWord = document.getElementById("search-word__input").value.trim();
   olElement.textContent = "";
@@ -59,10 +59,8 @@ async function selectedWordHandler(e) {
   const [word] = liElement.innerText.split(" ");
   const secondDomain = parseUrlDomain(activeTab.url, "second");
   const storageData = await readFromStorage(secondDomain);
-  if (!storageData.selectedWords.includes(word)) {
-    await addSelectedWordToStorage(word, storageData, secondDomain);
-    liElement.remove();
-  }
+  await addSelectedWordToStorage(word, storageData, secondDomain);
+  liElement.remove();
 }
 
 async function addSelectedWordToStorage(word, data, secondDomain) {
