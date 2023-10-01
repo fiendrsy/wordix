@@ -15,10 +15,10 @@
   git clone https://github.com/fiendrsy/wordix.git
 ```
 
-#### 1. Now you need to open firefox and write the text in the address bar.
+**1. Now you need to open firefox and write the text in the address bar.**
 
 ```
   about:debugging#/runtime/this-firefox
 ```
 
-#### 2. Here we need to load the extension. Click on the "Load Temporary Add-on" button and select the manifest file in the wordix folder.
+**2. Here we need to load the extension. Click on the "Load Temporary Add-on" button and select the manifest file in the wordix folder.**
