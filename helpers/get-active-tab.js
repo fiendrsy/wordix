@@ -1,7 +1,7 @@
 export default async function getActiveTab() {
   try {
-    let queryOption = { active: true, currentWindow: true };
-    let [data] = await browser.tabs.query(queryOption);
+    const queryOptions = { active: true, currentWindow: true };
+    const [data] = await browser.tabs.query(queryOptions);
     return data;
   } catch (e) {
     throw new Error("get active tab error", e);
