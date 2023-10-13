@@ -1,6 +1,6 @@
 "use strict";
 
-import getCurrentDate from "../helpers/get-current-date.js";
+import * as date from "../helpers/date.js";
 import * as url from "../helpers/url.js";
 import * as tabs from "../helpers/tabs.js";
 import * as storage from "../helpers/storage.js";
@@ -39,7 +39,7 @@ function updateWordFrequencyWithMissing(missingWords, matchedWords, oldWordFrequ
 }
 
 function generateInitialData(secondDomain, wordFrequency) {
-  const currDate = getCurrentDate();
+  const currDate = date.getCurrent();
   return {
     [secondDomain]: {
       createdAt: [currDate],
