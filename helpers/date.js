@@ -1,4 +1,4 @@
-export default function getCurrentDate() {
+export function getCurrent() {
   const date = new Date();
   const day = date.getDate();
   const month = date.getMonth() + 1;
