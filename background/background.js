@@ -1,16 +1,15 @@
 "use strict";
 
-import getActiveTab from "../helpers/get-active-tab.js";
 import getCurrentDate from "../helpers/get-current-date.js";
 import parseUrlDomain from "../helpers/parse-url-domain.js";
 import parseUrlPath from "../helpers/parse-url-path.js";
-import tabsSendMessage from "../helpers/tabs-send-message.js";
+import * as tabs from "../helpers/tabs.js";
 import * as storage from "../helpers/storage.js";
 
 const BAD_DOMAINS = ["twitch", "youtube", "monkeytype", "github"];
 
 async function tabsUpdateHandler(idUpdatedTab, changeInfo) {
-  const activeTab = await getActiveTab();
+  const activeTab = await tabs.getActive();
   const urlData = collectUrlData(activeTab.url);
   if (
     changeInfo.status !== "complete" ||
@@ -65,7 +64,7 @@ function collectUrlData(tabUrl) {
 }
 
 async function addNewContent(tabId, { secondDomain, path, thirdDomain } = urlData) {
-  const response = await tabsSendMessage(tabId, {});
+  const response = await tabs.sendMessage(tabId, {});
   const wordFrequency = JSON.parse(response);
   const initialData = generateInitialData(secondDomain, wordFrequency);
   initialData[secondDomain].paths.push(path);
@@ -93,7 +92,7 @@ async function processing({ path, secondDomain, thirdDomain } = currUrlData, tab
   const missingWords = [];
   const matchedWords = {};
   const storageData = await storage.read(secondDomain);
-  const response = await tabsSendMessage(tabId, {});
+  const response = await tabs.sendMessage(tabId, {});
   const currWordFrequency = JSON.parse(response);
   const wordsFromStorage = storageData.wordFrequency.map(([word]) => word);
   for (let [word, frequency] of currWordFrequency) {

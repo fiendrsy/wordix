@@ -1,8 +1,7 @@
 "use strict";
 
-import getActiveTab from "../../helpers/get-active-tab.js";
 import parseUrlDomain from "../../helpers/parse-url-domain.js";
-import tabsSendMessage from "../../helpers/tabs-send-message.js";
+import * as tabs from "../../helpers/tabs.js";
 import * as storage from "../../helpers/storage.js";
 
 let activeTab;
@@ -12,7 +11,7 @@ const olElement = document.querySelector(".parsed-words__list");
 const currSite = document.querySelector(".current-site-address");
 
 (async function init() {
-  const data = await getActiveTab();
+  const data = await tabs.getActive();
   activeTab = data;
   currSite.textContent = parseUrlDomain(activeTab.url);
 })();
@@ -41,7 +40,7 @@ async function parseHandler() {
   searchWord = document.getElementById("search-word__input").value.trim();
   olElement.textContent = "";
   const message = { minRepeats, searchWord };
-  const response = await tabsSendMessage(activeTab.id, message);
+  const response = await tabs.sendMessage(activeTab.id, message);
   const wordFrequency = await excludeSelectedWords(JSON.parse(response));
   wordFrequency.sort((a, b) => b[1] - a[1]);
   wordFrequency.forEach(insertInDocumentContent);
