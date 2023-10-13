@@ -1,4 +1,4 @@
-export default function parseUrlDomain(url, level) {
+export function parseDomain(url, level) {
   const PATTERN = /^(?:https?:\/\/)?(?:[^@\/\n]+@)?(?:www\.)?([^:\/?\n]+)/gim;
   let urlWithoutPath = url.match(PATTERN);
   let urlWithoutSchema = urlWithoutPath[0].replace("https://", "");
@@ -22,4 +22,10 @@ export default function parseUrlDomain(url, level) {
     default:
       return "";
   }
+}
+
+export function parsePath(url) {
+  const parts = url.split("/");
+  const result = parts.slice(3).join("/");
+  return result;
 }
