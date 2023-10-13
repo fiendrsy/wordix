@@ -1,8 +1,7 @@
 "use strict";
 
 import getCurrentDate from "../helpers/get-current-date.js";
-import parseUrlDomain from "../helpers/parse-url-domain.js";
-import parseUrlPath from "../helpers/parse-url-path.js";
+import * as url from "../helpers/url.js";
 import * as tabs from "../helpers/tabs.js";
 import * as storage from "../helpers/storage.js";
 
@@ -53,9 +52,9 @@ function generateInitialData(secondDomain, wordFrequency) {
 }
 
 function collectUrlData(tabUrl) {
-  const thirdDomain = parseUrlDomain(tabUrl, "third");
-  const path = parseUrlPath(tabUrl);
-  const secondDomain = parseUrlDomain(tabUrl, "second");
+  const thirdDomain = url.parseDomain(tabUrl, "third");
+  const path = url.parsePath(tabUrl);
+  const secondDomain = url.parseDomain(tabUrl, "second");
   return {
     thirdDomain,
     secondDomain,

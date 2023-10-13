@@ -1,7 +1,7 @@
 "use strict";
 
-import parseUrlDomain from "../../helpers/parse-url-domain.js";
 import * as tabs from "../../helpers/tabs.js";
+import * as url from "../../helpers/url.js";
 import * as storage from "../../helpers/storage.js";
 
 let activeTab;
@@ -13,7 +13,7 @@ const currSite = document.querySelector(".current-site-address");
 (async function init() {
   const data = await tabs.getActive();
   activeTab = data;
-  currSite.textContent = parseUrlDomain(activeTab.url);
+  currSite.textContent = url.parseDomain(activeTab.url);
 })();
 
 function insertInDocumentContent([word, count], index) {
@@ -47,7 +47,7 @@ async function parseHandler() {
 }
 
 async function excludeSelectedWords(words) {
-  const secondDomain = parseUrlDomain(activeTab.url, "second");
+  const secondDomain = url.parseDomain(activeTab.url, "second");
   const { selectedWords } = await storage.read(secondDomain);
   return words.filter(([word]) => !selectedWords.includes(word));
 }
@@ -55,7 +55,7 @@ async function excludeSelectedWords(words) {
 async function selectedWordHandler(e) {
   const liElement = e.target.parentNode;
   const [word] = liElement.innerText.split(" ");
-  const secondDomain = parseUrlDomain(activeTab.url, "second");
+  const secondDomain = url.parseDomain(activeTab.url, "second");
   const storageData = await storage.read(secondDomain);
   await addSelectedWordToStorage(word, storageData, secondDomain);
   liElement.remove();
