@@ -3,8 +3,7 @@
 import getActiveTab from "../../helpers/get-active-tab.js";
 import parseUrlDomain from "../../helpers/parse-url-domain.js";
 import tabsSendMessage from "../../helpers/tabs-send-message.js";
-import readFromStorage from "../../storage/read-from-storage.js";
-import saveToStorage from "../../storage/save-to-storage.js";
+import * as storage from "../../helpers/storage.js";
 
 let activeTab;
 let minRepeats;
@@ -50,7 +49,7 @@ async function parseHandler() {
 
 async function excludeSelectedWords(words) {
   const secondDomain = parseUrlDomain(activeTab.url, "second");
-  const { selectedWords } = await readFromStorage(secondDomain);
+  const { selectedWords } = await storage.read(secondDomain);
   return words.filter(([word]) => !selectedWords.includes(word));
 }
 
@@ -58,7 +57,7 @@ async function selectedWordHandler(e) {
   const liElement = e.target.parentNode;
   const [word] = liElement.innerText.split(" ");
   const secondDomain = parseUrlDomain(activeTab.url, "second");
-  const storageData = await readFromStorage(secondDomain);
+  const storageData = await storage.read(secondDomain);
   await addSelectedWordToStorage(word, storageData, secondDomain);
   liElement.remove();
 }
@@ -73,7 +72,7 @@ async function addSelectedWordToStorage(word, data, secondDomain) {
       thirdDomains: [...data.thirdDomains],
     },
   };
-  await saveToStorage(options);
+  await storage.save(options);
 }
 
 document.querySelector(".parse-button").addEventListener("click", parseHandler);

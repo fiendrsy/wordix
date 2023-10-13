@@ -1,7 +1,6 @@
 "use strict";
 
-import readAllFromStorage from "../../storage/read-all-from-storage.js";
-import readFromStorage from "../../storage/read-from-storage.js";
+import * as storage from "../../helpers/storage.js"
 
 let searchWord;
 let minRepeats;
@@ -19,10 +18,10 @@ async function uploadHandler() {
 async function getAllWordFrequencyFromStorage() {
   byDomain = document.getElementById("session-by-site").value.trim();
   if (byDomain.length > 1) {
-    const { wordFrequency } = await readFromStorage(byDomain);
+    const { wordFrequency } = await storage.read(byDomain);
     return wordFrequency;
   }
-  const storageData = await readAllFromStorage();
+  const storageData = await storage.readAll();
   const wordFrequency = [];
   for (let domain in storageData) {
     wordFrequency.push(...storageData[domain].wordFrequency);

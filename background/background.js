@@ -5,8 +5,7 @@ import getCurrentDate from "../helpers/get-current-date.js";
 import parseUrlDomain from "../helpers/parse-url-domain.js";
 import parseUrlPath from "../helpers/parse-url-path.js";
 import tabsSendMessage from "../helpers/tabs-send-message.js";
-import readFromStorage from "../storage/read-from-storage.js";
-import saveToStorage from "../storage/save-to-storage.js";
+import * as storage from "../helpers/storage.js";
 
 const BAD_DOMAINS = ["twitch", "youtube", "monkeytype", "github"];
 
@@ -20,7 +19,7 @@ async function tabsUpdateHandler(idUpdatedTab, changeInfo) {
   ) {
     return;
   }
-  const storageData = await readFromStorage(urlData.secondDomain);
+  const storageData = await storage.read(urlData.secondDomain);
   await autoUpdate(storageData, activeTab.id, urlData);
 }
 
@@ -71,11 +70,11 @@ async function addNewContent(tabId, { secondDomain, path, thirdDomain } = urlDat
   const initialData = generateInitialData(secondDomain, wordFrequency);
   initialData[secondDomain].paths.push(path);
   initialData[secondDomain].thirdDomains.push(thirdDomain);
-  await saveToStorage(initialData);
+  await storage.save(initialData);
 }
 
 async function updateContent(updatedWordFrequency, thirdDomain, secondDomain, path) {
-  const data = await readFromStorage(secondDomain);
+  const data = await storage.read(secondDomain);
   const options = {
     [secondDomain]: {
       createdAt: data.createdAt,
@@ -87,13 +86,13 @@ async function updateContent(updatedWordFrequency, thirdDomain, secondDomain, pa
   };
   if (!data.thirdDomains.includes(thirdDomain))
     options[secondDomain].thirdDomains.push(thirdDomain);
-  await saveToStorage(options);
+  await storage.save(options);
 }
 
 async function processing({ path, secondDomain, thirdDomain } = currUrlData, tabId) {
   const missingWords = [];
   const matchedWords = {};
-  const storageData = await readFromStorage(secondDomain);
+  const storageData = await storage.read(secondDomain);
   const response = await tabsSendMessage(tabId, {});
   const currWordFrequency = JSON.parse(response);
   const wordsFromStorage = storageData.wordFrequency.map(([word]) => word);
