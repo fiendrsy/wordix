@@ -17,7 +17,7 @@ async function uploadHandler() {
 
 async function getAllWordFrequencyFromStorage() {
   byDomain = document.getElementById("session-by-site").value.trim();
-  if (byDomain.length > 1) {
+  if (byDomain) {
     const { wordFrequency } = await storage.read(byDomain);
     return wordFrequency;
   }
@@ -26,8 +26,7 @@ async function getAllWordFrequencyFromStorage() {
   for (let domain in storageData) {
     wordFrequency.push(...storageData[domain].wordFrequency);
   }
-  const concateWordFrequency = concatWordFrequency(wordFrequency);
-  return concateWordFrequency;
+  return concatWordFrequency(wordFrequency);
 }
 
 function concatWordFrequency(wordFrequency) {
