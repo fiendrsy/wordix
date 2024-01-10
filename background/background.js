@@ -38,19 +38,6 @@ function updateWordFrequencyWithMissing(missingWords, matchedWords, oldWordFrequ
   return updatedWordFrequency;
 }
 
-function generateInitialData(secondDomain, wordFrequency) {
-  const currDate = date.getCurrent();
-  return {
-    [secondDomain]: {
-      createdAt: [currDate],
-      selectedWords: [],
-      wordFrequency,
-      paths: [],
-      thirdDomains: [],
-    },
-  };
-}
-
 function collectUrlData(tabUrl) {
   const thirdDomain = url.parseDomain(tabUrl, "third");
   const path = url.parsePath(tabUrl);
@@ -65,10 +52,16 @@ function collectUrlData(tabUrl) {
 async function addNewContent(tabId, { secondDomain, path, thirdDomain } = urlData) {
   const response = await tabs.sendMessage(tabId, {});
   const wordFrequency = JSON.parse(response);
-  const initialData = generateInitialData(secondDomain, wordFrequency);
-  initialData[secondDomain].paths.push(path);
-  initialData[secondDomain].thirdDomains.push(thirdDomain);
-  await storage.save(initialData);
+  const options = {
+    [secondDomain]: {
+      createdAt: date.getCurrent(),
+      selectedWords: [],
+      wordFrequency,
+      paths: [path],
+      thirdDomains: [thirdDomain],
+    },
+  };
+  await storage.save(options);
 }
 
 async function updateContent(updatedWordFrequency, thirdDomain, secondDomain, path) {
@@ -79,11 +72,9 @@ async function updateContent(updatedWordFrequency, thirdDomain, secondDomain, pa
       selectedWords: [...data.selectedWords],
       wordFrequency: updatedWordFrequency,
       paths: [...data.paths, path],
-      thirdDomains: [...data.thirdDomains],
+      thirdDomains: [...new Set([...data.thirdDomains, thirdDomain])],
     },
   };
-  if (!data.thirdDomains.includes(thirdDomain))
-    options[secondDomain].thirdDomains.push(thirdDomain);
   await storage.save(options);
 }
 

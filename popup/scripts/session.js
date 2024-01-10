@@ -10,12 +10,12 @@ let olElement = document.getElementById("session-list");
 
 async function uploadHandler() {
   olElement.textContent = "";
-  const wordFrequency = await getAllWordFrequencyFromStorage();
+  const wordFrequency = await getWordFrequencyFromStorage();
   const dataInputs = collectDataInputs();
   processing(dataInputs, wordFrequency);
 }
 
-async function getAllWordFrequencyFromStorage() {
+async function getWordFrequencyFromStorage() {
   byDomain = document.getElementById("session-by-site").value.trim();
   if (byDomain) {
     const { wordFrequency } = await storage.read(byDomain);
@@ -49,7 +49,7 @@ function insertContent([word, frequency]) {
 
 async function isSearchWord() {
   olElement.textContent = "";
-  const wordFrequency = await getAllWordFrequencyFromStorage();
+  const wordFrequency = await getWordFrequencyFromStorage();
   const dataInputs = collectDataInputs();
   const result = wordFrequency.filter(([word]) => word === dataInputs.searchWord);
   processing(dataInputs, result);
