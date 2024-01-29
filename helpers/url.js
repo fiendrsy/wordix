@@ -1,11 +1,11 @@
-export function parseDomain(url, level) {
+export function parseDomain(url, domainLevel) {
   const PATTERN = /^(?:https?:\/\/)?(?:[^@\/\n]+@)?(?:www\.)?([^:\/?\n]+)/gim;
   let urlWithoutPath = url.match(PATTERN);
   let urlWithoutSchema = urlWithoutPath[0].replace("https://", "");
-  if (!level) return urlWithoutSchema;
+  if (!domainLevel) return urlWithoutSchema;
   let domains = urlWithoutSchema.split(".");
   if (domains.length > 2) {
-    switch (level) {
+    switch (domainLevel) {
       case "top":
         return domains[2];
       case "second":
@@ -14,7 +14,7 @@ export function parseDomain(url, level) {
         return domains[0];
     }
   }
-  switch (level) {
+  switch (domainLevel) {
     case "top":
       return domains[1];
     case "second":
