@@ -10,10 +10,10 @@ let searchWord;
 const olElement = document.querySelector(".parsed-words__list");
 const currSite = document.querySelector(".current-site-address");
 
-(async function init() {
+void (async function init() {
   const data = await tabs.getActive();
   activeTab = data;
-  currSite.textContent = url.parseDomain(activeTab.url);
+  currSite.textContent = url.extractDomain(activeTab.url);
 })();
 
 function insertInDocumentContent([word, count], index) {
@@ -47,7 +47,7 @@ async function parseHandler() {
 }
 
 async function excludeSelectedWords(words) {
-  const secondDomain = url.parseDomain(activeTab.url, "second");
+  const secondDomain = url.extractDomain(activeTab.url, url.DomainLevels.SECOND);
   const { selectedWords } = await storage.read(secondDomain);
   return words.filter(([word]) => !selectedWords.includes(word));
 }
@@ -55,7 +55,7 @@ async function excludeSelectedWords(words) {
 async function selectedWordHandler(e) {
   const liElement = e.target.parentNode;
   const [word] = liElement.innerText.split(" ");
-  const secondDomain = url.parseDomain(activeTab.url, "second");
+  const secondDomain = url.extractDomain(activeTab.url, url.DomainLevels.SECOND);
   const storageData = await storage.read(secondDomain);
   await addSelectedWordToStorage(word, storageData, secondDomain);
   liElement.remove();
