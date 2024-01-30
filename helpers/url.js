@@ -29,6 +29,17 @@ function _selectDomain(domains, domainLevel) {
   }
 }
 
+export function compose(url) {
+  const thirdDomain = extractDomain(url, DomainLevels.THIRD);
+  const path = extractPath(url);
+  const secondDomain = extractDomain(url, DomainLevels.SECOND);
+  return {
+    thirdDomain,
+    secondDomain,
+    path,
+  };
+}
+
 export function extractPath(url) {
   if (!URL.canParse(url)) return "";
   return new URL(url).pathname;
