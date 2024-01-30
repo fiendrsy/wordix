@@ -2,30 +2,25 @@ export function extractDomain(url, domainLevel) {
   if (!URL.canParse(url)) return "";
   let hostname = new URL(url).hostname;
   if (!domainLevel) return hostname;
-  let domains = hostname.split(".").map(normalizeDomain);
-  if (domains.length > 2) {
-    switch (domainLevel) {
-      case "top":
-        return domains[2];
-      case "second":
-        return domains[1];
-      case "third":
-        return domains[0];
-    }
-  }
+  let domains = hostname.split(".").map(_normalizeDomain);
+  return _selectDomain(domains, domainLevel);
+}
+
+function _normalizeDomain(domain) {
+  if (typeof domain !== "string") return domain;
+  return domain.toLowerCase().trim();
+}
+
+function _selectDomain(domains, domainLevel) {
+  let thirdDomain = domains.length > 2 ? domains.shift() : "";
   switch (domainLevel) {
     case "top":
       return domains[1];
     case "second":
       return domains[0];
-    default:
-      return "";
+    case "third":
+      return thirdDomain;
   }
-}
-
-function normalizeDomain(domain) {
-  if (typeof domain !== "string") return domain;
-  return domain.toLowerCase().trim();
 }
 
 export function extractPath(url) {
