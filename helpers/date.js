@@ -13,6 +13,6 @@ export function getCurrent() {
     hours,
     minutes,
     seconds,
-    fulldate: `DATA: ${day}.${month}.${year} TIME: ${hours}:${minutes}:${seconds}`,
+    timestamp: `DATE: ${day}.${month}.${year} TIME: ${hours}:${minutes}:${seconds}`,
   };
 }
