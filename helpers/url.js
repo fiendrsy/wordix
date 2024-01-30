@@ -1,9 +1,8 @@
-export function parseDomain(url, domainLevel) {
-  const PATTERN = /^(?:https?:\/\/)?(?:[^@\/\n]+@)?(?:www\.)?([^:\/?\n]+)/gim;
-  let urlWithoutPath = url.match(PATTERN);
-  let urlWithoutSchema = urlWithoutPath[0].replace("https://", "");
-  if (!domainLevel) return urlWithoutSchema;
-  let domains = urlWithoutSchema.split(".");
+export function extractDomain(url, domainLevel) {
+  if (!URL.canParse(url)) return "";
+  let hostname = new URL(url).hostname;
+  if (!domainLevel) return hostname;
+  let domains = hostname.split(".").map(normalizeDomain);
   if (domains.length > 2) {
     switch (domainLevel) {
       case "top":
@@ -24,8 +23,12 @@ export function parseDomain(url, domainLevel) {
   }
 }
 
-export function parsePath(url) {
-  const parts = url.split("/");
-  const result = parts.slice(3).join("/");
-  return result;
+function normalizeDomain(domain) {
+  if (typeof domain !== "string") return domain;
+  return domain.toLowerCase().trim();
+}
+
+export function extractPath(url) {
+  if (!URL.canParse(url)) return "";
+  return new URL(url).pathname;
 }
