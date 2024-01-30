@@ -1,8 +1,14 @@
+export const DomainLevels = {
+  TOP: "top",
+  SECOND: "second",
+  THIRD: "third",
+};
+
 export function extractDomain(url, domainLevel) {
   if (!URL.canParse(url)) return "";
-  let hostname = new URL(url).hostname;
+  const hostname = new URL(url).hostname;
   if (!domainLevel) return hostname;
-  let domains = hostname.split(".").map(_normalizeDomain);
+  const domains = hostname.split(".").map(_normalizeDomain);
   return _selectDomain(domains, domainLevel);
 }
 
@@ -12,13 +18,13 @@ function _normalizeDomain(domain) {
 }
 
 function _selectDomain(domains, domainLevel) {
-  let thirdDomain = domains.length > 2 ? domains.shift() : "";
+  const thirdDomain = domains.length > 2 ? domains.shift() : "";
   switch (domainLevel) {
-    case "top":
+    case DomainLevels.TOP:
       return domains[1];
-    case "second":
+    case DomainLevels.SECOND:
       return domains[0];
-    case "third":
+    case DomainLevels.THIRD:
       return thirdDomain;
   }
 }
