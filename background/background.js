@@ -9,44 +9,33 @@ const BAD_DOMAINS = ["twitch", "youtube", "monkeytype", "github"];
 
 async function tabsUpdateHandler(idUpdatedTab, changeInfo) {
   const activeTab = await tabs.getActive();
-  const urlData = collectUrlData(activeTab.url);
+  const composeUrls = url.compose(activeTab.url);
   if (
     changeInfo.status !== "complete" ||
     activeTab.id !== idUpdatedTab ||
-    BAD_DOMAINS.includes(urlData.secondDomain)
+    BAD_DOMAINS.includes(composeUrls.secondDomain)
   ) {
     return;
   }
-  const storageData = await storage.read(urlData.secondDomain);
-  await autoUpdate(storageData, activeTab.id, urlData);
+  const storageData = await storage.read(composeUrls.secondDomain);
+  await observer(storageData, activeTab.id, composeUrls);
 }
 
-async function autoUpdate(storageData, tabId, currUrlData) {
+async function observer(storageData, tabId, composeUrls) {
   if (!storageData) {
-    addNewContent(tabId, currUrlData);
+    addNewContent(tabId, composeUrls);
     return;
   }
-  processing(currUrlData, tabId);
+  processing(composeUrls, tabId);
 }
 
-function updateWordFrequencyWithMissing(missingWords, matchedWords, oldWordFrequency) {
+function mergeWordFrequencyWithMissing(missingWords, matchedWords, oldWordFrequency) {
   const updatedWordFrequency = oldWordFrequency.map(([word, frequency]) => {
     if (word in matchedWords) frequency += matchedWords[word];
     return [word, frequency];
   });
   updatedWordFrequency.push(...missingWords);
   return updatedWordFrequency;
-}
-
-function collectUrlData(tabUrl) {
-  const thirdDomain = url.parseDomain(tabUrl, "third");
-  const path = url.parsePath(tabUrl);
-  const secondDomain = url.parseDomain(tabUrl, "second");
-  return {
-    thirdDomain,
-    secondDomain,
-    path,
-  };
 }
 
 async function addNewContent(tabId, { secondDomain, path, thirdDomain } = urlData) {
@@ -92,7 +81,7 @@ async function processing({ path, secondDomain, thirdDomain } = currUrlData, tab
   }
   if (missingWords.length === 0 && Object.values(matchedWords).length === 0) return;
   updateContent(
-    updateWordFrequencyWithMissing(missingWords, matchedWords, storageData.wordFrequency),
+    mergeWordFrequencyWithMissing(missingWords, matchedWords, storageData.wordFrequency),
     thirdDomain,
     secondDomain,
     path
