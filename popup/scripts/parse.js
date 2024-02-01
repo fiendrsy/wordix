@@ -1,18 +1,17 @@
 "use strict";
 
+import { DomainLevels } from "../../constants/constants.js";
 import * as tabs from "../../helpers/tabs.js";
 import * as url from "../../helpers/url.js";
 import * as storage from "../../helpers/storage.js";
 
-let activeTab;
-let minRepeats;
-let searchWord;
+let activeTab, minRepeats, searchWord;
 const olElement = document.querySelector(".parsed-words__list");
 const currSite = document.querySelector(".current-site-address");
 
 void (async function init() {
-  const data = await tabs.getActive();
-  activeTab = data;
+  const response = await tabs.getActive();
+  activeTab = response;
   currSite.textContent = url.extractDomain(activeTab.url);
 })();
 
@@ -42,12 +41,11 @@ async function parseHandler() {
   const message = { minRepeats, searchWord };
   const response = await tabs.sendMessage(activeTab.id, message);
   const wordFrequency = await excludeSelectedWords(JSON.parse(response));
-  wordFrequency.sort((a, b) => b[1] - a[1]);
-  wordFrequency.forEach(insertInDocumentContent);
+  wordFrequency.sort((a, b) => b[1] - a[1]).forEach(insertInDocumentContent);
 }
 
 async function excludeSelectedWords(words) {
-  const secondDomain = url.extractDomain(activeTab.url, url.DomainLevels.SECOND);
+  const secondDomain = url.extractDomain(activeTab.url, DomainLevels.SECOND);
   const { selectedWords } = await storage.read(secondDomain);
   return words.filter(([word]) => !selectedWords.includes(word));
 }
@@ -55,7 +53,7 @@ async function excludeSelectedWords(words) {
 async function selectedWordHandler(e) {
   const liElement = e.target.parentNode;
   const [word] = liElement.innerText.split(" ");
-  const secondDomain = url.extractDomain(activeTab.url, url.DomainLevels.SECOND);
+  const secondDomain = url.extractDomain(activeTab.url, DomainLevels.SECOND);
   const storageData = await storage.read(secondDomain);
   await addSelectedWordToStorage(word, storageData, secondDomain);
   liElement.remove();
@@ -63,15 +61,13 @@ async function selectedWordHandler(e) {
 
 async function addSelectedWordToStorage(word, data, secondDomain) {
   const options = {
-    [secondDomain]: {
-      createdAt: data.createdAt,
-      selectedWords: [...data.selectedWords, word],
-      wordFrequency: [...data.wordFrequency],
-      paths: [...data.paths],
-      thirdDomains: [...data.thirdDomains],
-    },
+    createdAt: data.createdAt,
+    selectedWords: [...data.selectedWords, word],
+    wordFrequency: [...data.wordFrequency],
+    paths: [...data.paths],
+    thirdDomains: [...data.thirdDomains],
   };
-  await storage.save(options);
+  await storage.save(options, secondDomain);
 }
 
 document.querySelector(".parse-button").addEventListener("click", parseHandler);
