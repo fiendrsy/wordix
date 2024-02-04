@@ -16,5 +16,7 @@ export const ErrorMessages = {
   READ_ALL_STORAGE: "Read all from storage an error!",
   READ_STORAGE: "Read from storage an error!",
   ACTIVE_TAB: "Get active tab an error!",
-  SEND_TAB: "Tabs send message an error!"
+  SEND_TAB: "Tabs send message an error!",
+  WRONG_VALUE: "<- Wrong value!",
+  INIT_PROBLEM: "Script is not initiated an error!",
 };
