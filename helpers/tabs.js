@@ -1,9 +1,11 @@
-export function sendMessage(tabId, message) {
+import { ErrorMessages } from "../constants/constants.js";
+
+export function sendMessage(tabID, message) {
   try {
-    let response = browser.tabs.sendMessage(tabId, message);
+    let response = browser.tabs.sendMessage(tabID, message);
     return response;
-  } catch (e) {
-    throw new Error("tabs send message error", e);
+  } catch (ex) {
+    throw new Error(ErrorMessages.SEND_TAB, ex);
   }
 }
 
@@ -12,7 +14,7 @@ export async function getActive() {
     const queryOptions = { active: true, currentWindow: true };
     const [data] = await browser.tabs.query(queryOptions);
     return data;
-  } catch (e) {
-    throw new Error("get active tab error", e);
+  } catch (ex) {
+    throw new Error(ErrorMessages.ACTIVE_TAB, ex);
   }
 }
