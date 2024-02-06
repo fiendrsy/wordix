@@ -1,11 +1,11 @@
 "use strict";
 
-import { Domains } from "../constants/constants.js";
+import { BlackListDomains } from "../constants/constants.js";
 import * as tabs from "../helpers/tabs.js";
 import * as url from "../helpers/url.js";
 import * as storage from "../helpers/storage.js";
 
-const badDomains = Object.values(Domains);
+const blackList = Object.values(BlackListDomains);
 
 const findMathedWords = (wordFrequency, cachedWords) =>
   wordFrequency
@@ -23,10 +23,12 @@ const mergeMissing = (missingWords, matchedWords, cachedWordFrequency) =>
 const fetchWordFrequency = (cachedWordFrequency, wordFrequency) => {
   try {
     const cachedWords = cachedWordFrequency.map(([word]) => word);
-    const missingWords = findMissingWords(wordFrequency, cachedWords);
-    const matchedWords = findMathedWords(wordFrequency, cachedWords);
 
-    return mergeMissing(missingWords, matchedWords, cachedWordFrequency);
+    return mergeMissing(
+      findMissingWords(wordFrequency, cachedWords),
+      findMathedWords(wordFrequency, cachedWords),
+      cachedWordFrequency,
+    );
   } catch (ex) {
     console.error(ex);
   }
@@ -45,8 +47,11 @@ const addNewContent = async (wordFrequency, composedParts) => {
 const updateContent = async (composedParts, data, wordFrequency) => {
   try {
     const cachedWordFrequency = data.wordFrequency;
-    const fetchedWordFrequency = fetchWordFrequency(cachedWordFrequency, wordFrequency);
-    const options = storage.createOptions(fetchedWordFrequency, data, composedParts);
+    const options = storage.createOptions(
+      fetchWordFrequency(cachedWordFrequency, wordFrequency),
+      data,
+      composedParts,
+    );
 
     await storage.save(options, composedParts.secondDomain);
   } catch (ex) {
@@ -80,7 +85,7 @@ const onUpdateTab = async (tabID, { status }, tab) => {
     const composedParts = url.composeParts(tab.url);
     const partsExist = !!Object.keys(composedParts).length;
 
-    if (!partsExist || badDomains.includes(composedParts.secondDomain)) return;
+    if (!partsExist || blackList.includes(composedParts.secondDomain)) return;
 
     await observer(tabID, composedParts);
   } catch (ex) {
