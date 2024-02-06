@@ -4,7 +4,7 @@ export const DomainLevels = {
   THIRD: "third",
 };
 
-export const Domains = {
+export const BlackListDomains = {
   TWITCH: "twitch",
   YOUTUBE: "youtube",
   MONKEYTYPE: "monkeytype",
