@@ -1,75 +1,104 @@
 "use strict";
 
-import { DomainLevels } from "../../constants/constants.js";
+import { logger } from "../../helpers/logger.js";
 import * as tabs from "../../helpers/tabs.js";
-import * as url from "../../helpers/url.js";
 import * as storage from "../../helpers/storage.js";
 
-let activeTab, minRepeats, searchWord;
-const olElement = document.querySelector(".parsed-words__list");
-const currSite = document.querySelector(".current-site-address");
+// The current file name needed for logger
+const FILE_NAME = "parse.js";
 
-void (async function init() {
-  const response = await tabs.getActive();
-  activeTab = response;
-  currSite.textContent = url.extractDomain(activeTab.url);
-})();
+const refreshState = () => {
+  document.querySelector(".parsed-words__list").textContent = "";
 
-function insertInDocumentContent([word, count], index) {
-  const aElement = document.createElement("a");
-  const liElement = document.createElement("li");
-  const labelElement = document.createElement("label");
-  const checkboxElement = document.createElement("input");
-  aElement.setAttribute("href", `https://context.reverso.net/translation/english-russian/${word}`);
-  aElement.classList.add("context-link");
-  checkboxElement.setAttribute("type", "checkbox");
-  checkboxElement.id = `parsed-word__${index}`;
-  labelElement.htmlFor = `${checkboxElement.id}`;
-  aElement.textContent = `${word} -> ${count} times`;
-  labelElement.append(aElement);
-  liElement.setAttribute("id", `${index}`);
-  liElement.append(checkboxElement);
-  liElement.append(labelElement);
-  olElement.append(liElement);
-  checkboxElement.addEventListener("change", selectedWordHandler);
+  void 0;
+};
+
+export async function onParse(tab, partsURL) {
+  try {
+    refreshState();
+
+    const minRepeats = document.getElementById("min-repeats__input").value.trim();
+    const searchWord = document.getElementById("search-word__input").value.trim();
+
+    const data = await storage.read(partsURL.secondDomain);
+    const response = await tabs.sendMessage(tab.id, { minRepeats, searchWord });
+    const wordFrequency = JSON.parse(response);
+
+    // Exclude words that were selected from wordFrequency
+    const excludeSelectedWords = (wordFrequency) =>
+      wordFrequency.filter(([word]) => !data.selectedWords.includes(word));
+
+    const prepareWordFrequncy = (wordFrequency) => {
+      const result = !data ? wordFrequency : excludeSelectedWords(wordFrequency);
+
+      // Sorting result in descending order
+      return result.sort((a, b) => b[1] - a[1]);
+    };
+
+    async function addSelectedWordToStorage(word) {
+      try {
+        if (!data) return;
+
+        const options = storage.createOptions(data.wordFrequency, data, partsURL);
+        options.selectedWords.push(word);
+
+        await storage.save(options, partsURL.secondDomain);
+      } catch (ex) {
+        logger(addSelectedWordToStorage.name, FILE_NAME, arguments);
+        console.error(ex);
+      }
+    }
+
+    async function onSelectWord(ev) {
+      try {
+        const li = ev.target.parentNode;
+        const [word] = li.innerText.split(" ");
+
+        await addSelectedWordToStorage(word);
+
+        li.remove();
+      } catch (ex) {
+        logger(onSelectWord.name, FILE_NAME, arguments);
+        console.error(ex);
+      }
+    }
+
+    function insertContentToDOM([word, frequency], index) {
+      let url = `https://context.reverso.net/translation/english-russian/${word}`;
+      let wordFrequency = `${word} -> ${frequency} times`;
+      let checkBoxID = `parsed-word__${index}`;
+
+      const a = document.createElement("a");
+      const li = document.createElement("li");
+      const label = document.createElement("label");
+      const checkbox = document.createElement("input");
+      const parsedWords = document.querySelector(".parsed-words__list");
+
+      a.setAttribute("href", url);
+      a.classList.add("context-link");
+
+      checkbox.setAttribute("type", "checkbox");
+      checkbox.id = checkBoxID;
+
+      label.htmlFor = checkBoxID;
+      a.textContent = wordFrequency;
+
+      label.append(a);
+      li.setAttribute("id", `${index}`);
+      li.append(checkbox);
+      li.append(label);
+      parsedWords.append(li);
+
+      checkbox.addEventListener("change", onSelectWord);
+    }
+
+    const preparedWordFrequncy = prepareWordFrequncy(wordFrequency);
+
+    preparedWordFrequncy.forEach(insertContentToDOM);
+
+    void 0;
+  } catch (ex) {
+    logger(onParse.name, FILE_NAME, arguments);
+    console.error(ex);
+  }
 }
-
-async function parseHandler() {
-  minRepeats = document.getElementById("min-repeats__input").value.trim();
-  searchWord = document.getElementById("search-word__input").value.trim();
-  olElement.textContent = "";
-  const message = { minRepeats, searchWord };
-  const response = await tabs.sendMessage(activeTab.id, message);
-  const wordFrequency = await excludeSelectedWords(JSON.parse(response));
-  wordFrequency.sort((a, b) => b[1] - a[1]).forEach(insertInDocumentContent);
-}
-
-async function excludeSelectedWords(words) {
-  const secondDomain = url.extractDomain(activeTab.url, DomainLevels.SECOND);
-  const { selectedWords } = await storage.read(secondDomain);
-  return words.filter(([word]) => !selectedWords.includes(word));
-}
-
-async function selectedWordHandler(e) {
-  const liElement = e.target.parentNode;
-  const [word] = liElement.innerText.split(" ");
-  const secondDomain = url.extractDomain(activeTab.url, DomainLevels.SECOND);
-  const storageData = await storage.read(secondDomain);
-  await addSelectedWordToStorage(word, storageData, secondDomain);
-  liElement.remove();
-}
-
-async function addSelectedWordToStorage(word, data, secondDomain) {
-  const options = {
-    createdAt: data.createdAt,
-    selectedWords: [...data.selectedWords, word],
-    wordFrequency: [...data.wordFrequency],
-    paths: [...data.paths],
-    thirdDomains: [...data.thirdDomains],
-  };
-  await storage.save(options, secondDomain);
-}
-
-document.querySelector(".parse-button").addEventListener("click", parseHandler);
-document.getElementById("search-word__input").addEventListener("input", parseHandler);
-document.getElementById("min-repeats__input").addEventListener("input", parseHandler);
