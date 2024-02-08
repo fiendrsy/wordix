@@ -3,11 +3,11 @@ import { DomainLevels } from "../constants/constants.js";
 const normalizeDomain = (domain) =>
   typeof domain !== "string" ? domain : domain.trim().toLowerCase();
 
-const isSystemURL = (url) =>
-  url.startsWith("about:") ||
-  url.startsWith("chrome:") ||
-  url.startsWith("local:") ||
-  url.startsWith("view-source:");
+const isHTTP = (url) => url.startsWith("http://") || url.startsWith("https://");
+
+const extractPath = (url) => new URL(url).pathname;
+
+const isValidURL = (url) => URL.canParse(url) && isHTTP(url);
 
 function selectDomain(domains, domainLevel) {
   const thirdDomain = domains.length > 2 ? domains.shift() : "";
@@ -22,8 +22,6 @@ function selectDomain(domains, domainLevel) {
   }
 }
 
-const extractPath = (url) => new URL(url).pathname;
-
 function extractDomain(url, domainLevel) {
   const hostname = new URL(url).hostname;
 
@@ -34,19 +32,17 @@ function extractDomain(url, domainLevel) {
   return selectDomain(domains, domainLevel);
 }
 
-export function isValidURL(url) {
-  return URL.canParse(url) && !isSystemURL(url);
-}
-
 export function composeParts(url) {
   if (!isValidURL(url)) return {};
 
+  const hostname = extractDomain(url);
   const thirdDomain = extractDomain(url, DomainLevels.THIRD);
   const secondDomain = extractDomain(url, DomainLevels.SECOND);
   const topDomain = extractDomain(url, DomainLevels.TOP);
   const path = extractPath(url);
 
   return {
+    hostname,
     thirdDomain,
     secondDomain,
     topDomain,
