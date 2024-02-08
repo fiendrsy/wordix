@@ -1,10 +1,13 @@
 "use strict";
 
 import { BlackListDomains } from "../constants/constants.js";
+import { logger } from "../helpers/logger.js";
 import * as tabs from "../helpers/tabs.js";
 import * as url from "../helpers/url.js";
 import * as storage from "../helpers/storage.js";
 
+// The current file name needed for logger
+const FILE_NAME = "background.js";
 const blackList = Object.values(BlackListDomains);
 
 const findMathedWords = (wordFrequency, cachedWords) =>
@@ -20,7 +23,7 @@ const mergeMissing = (missingWords, matchedWords, cachedWordFrequency) =>
     .map(([word, frequency]) => [word, frequency + (matchedWords[word] || 0)])
     .concat(missingWords);
 
-const fetchWordFrequency = (cachedWordFrequency, wordFrequency) => {
+async function fetchWordFrequency(cachedWordFrequency, wordFrequency) {
   try {
     const cachedWords = cachedWordFrequency.map(([word]) => word);
 
@@ -30,67 +33,72 @@ const fetchWordFrequency = (cachedWordFrequency, wordFrequency) => {
       cachedWordFrequency,
     );
   } catch (ex) {
+    logger(fetchWordFrequency.name, FILE_NAME, arguments);
     console.error(ex);
   }
-};
+}
 
-const addNewContent = async (wordFrequency, composedParts) => {
+async function addNewContent(wordFrequency, partsURL) {
   try {
-    const options = storage.createOptions(wordFrequency, null, composedParts);
+    const options = storage.createOptions(wordFrequency, null, partsURL);
 
-    await storage.save(options, composedParts.secondDomain);
+    await storage.save(options, partsURL.secondDomain);
   } catch (ex) {
+    logger(addNewContent.name, FILE_NAME, arguments);
     console.error(ex);
   }
-};
+}
 
-const updateContent = async (composedParts, data, wordFrequency) => {
+async function updateContent(partsURL, data, wordFrequency) {
   try {
     const cachedWordFrequency = data.wordFrequency;
     const options = storage.createOptions(
       fetchWordFrequency(cachedWordFrequency, wordFrequency),
       data,
-      composedParts,
+      partsURL,
     );
 
-    await storage.save(options, composedParts.secondDomain);
+    await storage.save(options, partsURL.secondDomain);
   } catch (ex) {
+    logger(updateContent.name, FILE_NAME, arguments);
     console.error(ex);
   }
-};
+}
 
-const observer = async (tabID, composedParts) => {
+async function observer(tabID, partsURL) {
   try {
     const response = await tabs.sendMessage(tabID, {});
     const wordFrequency = JSON.parse(response);
-    const data = await storage.read(composedParts.secondDomain);
+    const data = await storage.read(partsURL.secondDomain);
 
     if (!data) {
-      await addNewContent(wordFrequency, composedParts);
+      await addNewContent(wordFrequency, partsURL);
       return;
     }
 
-    const isVisitedPath = data.paths.includes(composedParts.path);
+    const isVisitedPath = data.paths.includes(partsURL.path);
 
-    if (!isVisitedPath) await updateContent(composedParts, data, wordFrequency);
+    if (!isVisitedPath) await updateContent(partsURL, data, wordFrequency);
   } catch (ex) {
+    logger(observer.name, FILE_NAME, arguments);
     console.error(ex);
   }
-};
+}
 
-const onUpdateTab = async (tabID, { status }, tab) => {
+async function onUpdateTab(tabID, { status }, tab) {
   try {
     if (status !== "complete") return;
 
-    const composedParts = url.composeParts(tab.url);
-    const partsExist = !!Object.keys(composedParts).length;
+    const partsURL = url.composeParts(tab.url);
+    const partsExist = !!Object.keys(partsURL).length;
 
-    if (!partsExist || blackList.includes(composedParts.secondDomain)) return;
+    if (!partsExist || blackList.includes(partsURL.secondDomain)) return;
 
-    await observer(tabID, composedParts);
+    await observer(tabID, partsURL);
   } catch (ex) {
+    logger(onUpdateTab.name, FILE_NAME, arguments);
     console.error(ex);
   }
-};
+}
 
 browser.tabs.onUpdated.addListener(onUpdateTab);
