@@ -20,3 +20,10 @@ export const ErrorMessages = {
   WRONG_VALUE: "<- Wrong value!",
   INIT_PROBLEM: "Script is not initiated an error!",
 };
+
+export const FragmentsURL = {
+  HTTP: "http://",
+  HTTPS: "https://",
+  LOCALHOST: "localhost",
+  NUMERIC_HOST: "127.0.0.1",
+};
