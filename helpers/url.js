@@ -1,15 +1,8 @@
-import { DomainLevels } from "../constants/constants.js";
+"use strict";
 
-const normalizeDomain = (domain) =>
-  typeof domain !== "string" ? domain : domain.trim().toLowerCase();
+import { DomainLevels, FragmentsURL } from "../constants/constants.js";
 
-const isHTTP = (url) => url.startsWith("http://") || url.startsWith("https://");
-
-const extractPath = (url) => new URL(url).pathname;
-
-const isValidURL = (url) => URL.canParse(url) && isHTTP(url);
-
-function selectDomain(domains, domainLevel) {
+const selectDomain = function (domains, domainLevel) {
   const thirdDomain = domains.length > 2 ? domains.shift() : "";
 
   switch (domainLevel) {
@@ -20,9 +13,11 @@ function selectDomain(domains, domainLevel) {
     case DomainLevels.THIRD:
       return thirdDomain;
   }
-}
+};
 
-function extractDomain(url, domainLevel) {
+const normalizeDomain = (domain) => domain.toString().toLowerCase().trim();
+
+const extractDomain = function (url, domainLevel) {
   const hostname = new URL(url).hostname;
 
   if (!domainLevel) return hostname;
@@ -30,7 +25,16 @@ function extractDomain(url, domainLevel) {
   const domains = hostname.split(".").map(normalizeDomain);
 
   return selectDomain(domains, domainLevel);
-}
+};
+
+const isHTTP = (url) => url.startsWith(FragmentsURL.HTTP) || url.startsWith(FragmentsURL.HTTPS);
+
+const extractPath = (url) => new URL(url).pathname;
+
+const isLocalHost = (url) =>
+  extractDomain(url) === FragmentsURL.LOCALHOST || extractDomain(url) === FragmentsURL.NUMERIC_HOST;
+
+const isValidURL = (url) => URL.canParse(url) && isHTTP(url) && !isLocalHost(url);
 
 export function composeParts(url) {
   if (!isValidURL(url)) return {};
