@@ -1,5 +1,9 @@
 "use strict";
 
+import { logger } from "../../helpers/logger.js";
+import { writeErrors } from "../../helpers/error.js";
+
+const FILE_NAME = "dom.js";
 const HTML_TAGS = [
   "div", "p", "span", "a", "img", "input", "button", "ul", "li", "ol", "form",
   "label", "h1", "h2", "h3", "h4", "h5", "h6", "header", "nav", "footer", "section",
@@ -17,19 +21,24 @@ const isValidSelector = (sl) => {
   const VALID = true;
   const INVALID = false;
 
-  if (typeof sl !== "string")
+  if (typeof sl !== "string") {
     return INVALID;
-  else if (!isValidFormat(sl))
+  } else if (!isValidFormat(sl)) {
     return INVALID;
-  else if (!isExistsSelector(sl))
+  } else if (!isExistsSelector(sl)) {
     return INVALID;
-  else
+  } else {
     return VALID;
+  }
 };
 
 export const qSl = (sl, all = false) => {
-  if (!isValidSelector(sl))
+  if (!isValidSelector(sl)) {
+    logger(qSl.name, FILE_NAME, { sl, all });
+    writeErrors(sl);
+
     return null;
+  }
 
   if (all)
     return document.querySelectorAll(sl);
@@ -38,22 +47,71 @@ export const qSl = (sl, all = false) => {
 };
 
 export const cEl = (el) => {
-  if (typeof el !== "string" && HTML_TAGS.includes(el))
+  if (typeof el !== "string" || !HTML_TAGS.includes(el)) {
+    logger(cEl.name, FILE_NAME, { el });
+    writeErrors(el);
+
     return null;
+  }
 
   return document.createElement(el);
 };
 
 export const gVal = (sl) => {
-  if (!isValidSelector(sl)) return "";
+  if (!isValidSelector(sl)) {
+    logger(gVal.name, FILE_NAME, { sl });
+    writeErrors(sl);
 
-  return sl?.value?.trim() ?? "";
+    return "";
+  }
+
+  const el = qSl(sl);
+
+  return el instanceof HTMLInputElement ? el.value.trim() : "";
 }
 
-export const clearSl = (sl) => {
-  if (!isValidSelector(sl)) return;
+export const addLis = (target, event, fn, ...args) => {
+  if (typeof event !== "string" || typeof fn !== "function") {
+    logger(addLis.name, FILE_NAME, { event, fn });
+    writeErrors(event, fn);
 
-  document.querySelector(sl).textContent = "";
+    return;
+  }
+
+  const wrapper = async (ev) => await fn(ev, ...args);
+  let el;
+
+  if (target instanceof HTMLElement || target === document) {
+    el = target;
+  } else if (isValidSelector(target)) {
+    el = qSl(target);
+  } else {
+    logger(addLis.name, FILE_NAME, { target });
+    writeErrors(target);
+
+    return;
+  }
+
+  el.addEventListener(event, wrapper);
 
   void 0;
 };
+
+export const reWrite = (sl, text = "") => {
+  if (!isValidSelector(sl)) {
+    logger(reWrite.name, FILE_NAME, { sl, text });
+    writeErrors(sl, text);
+
+    return;
+  }
+
+  const el = qSl(sl);
+
+  el.textContent = text;
+
+  void 0;
+};
+
+export const gDoc = () => document;
+
+export const gBody = () => document.body;
