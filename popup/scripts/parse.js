@@ -11,7 +11,7 @@ const FILE_NAME = "parse.js";
 // The function is fired by clicked on parse button
 export const onParse = async function (tab, partsURL) {
   try {
-    dom.clearSl(".parsed-words__list");
+    dom.reWrite(".parsed-words__list");
 
     const minRepeats = dom.gVal("#min-repeats__input");
     const searchWord = dom.gVal("#search-word__input");

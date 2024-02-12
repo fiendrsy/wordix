@@ -27,16 +27,16 @@ const extractDomain = function (url, domainLevel) {
   return selectDomain(domains, domainLevel);
 };
 
-const isHTTP = (url) => url.startsWith(FragmentsURL.HTTP) || url.startsWith(FragmentsURL.HTTPS);
-
 const extractPath = (url) => new URL(url).pathname;
 
 const isLocalHost = (url) =>
   extractDomain(url) === FragmentsURL.LOCALHOST || extractDomain(url) === FragmentsURL.NUMERIC_HOST;
 
+const isHTTP = (url) => url.startsWith(FragmentsURL.HTTP) || url.startsWith(FragmentsURL.HTTPS);
+
 const isValidURL = (url) => URL.canParse(url) && isHTTP(url) && !isLocalHost(url);
 
-export function composeParts(url) {
+export const composeParts = function (url) {
   if (!isValidURL(url)) return {};
 
   const hostname = extractDomain(url);
@@ -52,4 +52,4 @@ export function composeParts(url) {
     topDomain,
     path,
   };
-}
+};

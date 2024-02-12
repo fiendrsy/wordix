@@ -23,33 +23,42 @@ const mergeMissing = (missingWords, matchedWords, cachedWordFrequency) =>
     .map(([word, frequency]) => [word, frequency + (matchedWords[word] || 0)])
     .concat(missingWords);
 
-async function fetchWordFrequency(cachedWordFrequency, wordFrequency) {
+const fetchWordFrequency = function (cachedWordFrequency, wordFrequency) {
   try {
     const cachedWords = cachedWordFrequency.map(([word]) => word);
-
-    return mergeMissing(
+    const mergedWordFrequency = mergeMissing(
       findMissingWords(wordFrequency, cachedWords),
       findMathedWords(wordFrequency, cachedWords),
       cachedWordFrequency,
     );
+
+    logger(fetchWordFrequency.name, FILE_NAME, {
+      arguments,
+      cachedWords,
+      mergedWordFrequency,
+    });
+
+    return mergedWordFrequency;
   } catch (ex) {
     logger(fetchWordFrequency.name, FILE_NAME, arguments);
     console.error(ex);
   }
-}
+};
 
-async function addNewContent(wordFrequency, partsURL) {
+const addNewContent = async function (wordFrequency, partsURL) {
   try {
     const options = storage.createOptions(wordFrequency, null, partsURL);
+
+    logger(addNewContent.name, FILE_NAME, { arguments, options });
 
     await storage.save(options, partsURL.secondDomain);
   } catch (ex) {
     logger(addNewContent.name, FILE_NAME, arguments);
     console.error(ex);
   }
-}
+};
 
-async function updateContent(partsURL, data, wordFrequency) {
+const updateContent = async function (partsURL, data, wordFrequency) {
   try {
     const cachedWordFrequency = data.wordFrequency;
     const options = storage.createOptions(
@@ -58,18 +67,22 @@ async function updateContent(partsURL, data, wordFrequency) {
       partsURL,
     );
 
+    logger(updateContent.name, FILE_NAME, { arguments, cachedWordFrequency, options });
+
     await storage.save(options, partsURL.secondDomain);
   } catch (ex) {
     logger(updateContent.name, FILE_NAME, arguments);
     console.error(ex);
   }
-}
+};
 
-async function observer(tabID, partsURL) {
+const observer = async function (tabID, partsURL) {
   try {
-    const response = await tabs.sendMessage(tabID, {});
+    const response = await tabs.sendMessage(tabID);
     const wordFrequency = JSON.parse(response);
     const data = await storage.read(partsURL.secondDomain);
+
+    logger(observer.name, FILE_NAME, { arguments, response, wordFrequency, data });
 
     if (!data) {
       await addNewContent(wordFrequency, partsURL);
@@ -83,22 +96,25 @@ async function observer(tabID, partsURL) {
     logger(observer.name, FILE_NAME, arguments);
     console.error(ex);
   }
-}
+};
 
-async function onUpdateTab(tabID, { status }, tab) {
+const onUpdateTab = async function (tabID, { status }, tab) {
+  if (status !== "complete")
+    return;
   try {
-    if (status !== "complete") return;
-
     const partsURL = url.composeParts(tab.url);
     const partsExist = !!Object.keys(partsURL).length;
 
-    if (!partsExist || blackList.includes(partsURL.secondDomain)) return;
+    logger(onUpdateTab.name, FILE_NAME, { arguments, partsURL, partsExist });
+
+    if (!partsExist || blackList.includes(partsURL.secondDomain))
+      return;
 
     await observer(tabID, partsURL);
   } catch (ex) {
     logger(onUpdateTab.name, FILE_NAME, arguments);
     console.error(ex);
   }
-}
+};
 
 browser.tabs.onUpdated.addListener(onUpdateTab);
