@@ -1,81 +1,91 @@
 "use strict";
 
-import * as storage from "../../helpers/storage.js"
+import * as dom from "./dom.js";
+import * as storage from "../../helpers/storage.js";
+import { writeErrors } from "../../helpers/error.js";
+import { logger } from "../../helpers/logger.js";
 
-let searchWord;
-let minRepeats;
-let limitWords;
-let byDomain;
-let olElement = document.getElementById("session-list");
+const FILE_NAME = "session.js";
 
-async function uploadHandler() {
-  olElement.textContent = "";
-  const wordFrequency = await getWordFrequencyFromStorage();
-  const dataInputs = collectDataInputs();
-  processing(dataInputs, wordFrequency);
-}
+export const onUpload = async function () {
+  try {
+    dom.reWrite("#session-list");
 
-async function getWordFrequencyFromStorage() {
-  byDomain = document.getElementById("session-by-site").value.trim();
-  if (byDomain) {
-    const { wordFrequency } = await storage.read(byDomain);
-    return wordFrequency;
+    const minRepeats = dom.gVal("#session-min-repeats");
+    const limitWords = dom.gVal("#session-limit-words");
+    const searchWord = dom.gVal("#session-search-word");
+    const domain = dom.gVal("#session-by-site");
+
+    const mergeWordFrequency = async function () {
+      try {
+        const data = !!domain
+          ? await storage.read(domain)
+          : await storage.readAll();
+
+        if (!data) {
+          logger(mergeWordFrequency.name, FILE_NAME, { data, domain });
+          writeErrors(data, domain);
+
+          return [];
+        }
+
+        const mergedWordFrequency = []
+          .concat(data)
+          .flatMap((domainData) => domainData.wordFrequency)
+          .reduce((acc, [word, frequency]) => {
+            acc[word] = (acc[word] || 0) + frequency;
+
+            return acc;
+          }, {});
+
+        return Object.entries(mergedWordFrequency);
+      } catch (ex) {
+        logger(mergeWordFrequency.name, FILE_NAME, { data, domain });
+        writeErrors(data, domain);
+
+        return [];
+      }
+    };
+
+    const prepareWordFrequency = function (wordFrequency) {
+      const min = parseInt(minRepeats) || 1;
+      const limit = parseInt(limitWords) || wordFrequency.length;
+      const preparedWordFrequency = wordFrequency
+        .filter(([_, frequency]) => frequency >= min)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, limit);
+
+      return !!searchWord
+        ? preparedWordFrequency.filter(([word]) => word === searchWord)
+        : preparedWordFrequency;
+    };
+
+    const insertContentToDOM = function ([word, frequency]) {
+      let url = `https://context.reverso.net/translation/english-russian/${word}`;
+      let wordFrequency = `${word} -> ${frequency} times`;
+
+      const li = dom.cEl("li");
+      const a = dom.cEl("a");
+      const sessionList = dom.qSl("#session-list");
+
+      a.setAttribute("href", url);
+      a.classList.add("context-link");
+      a.textContent = wordFrequency;
+
+      li.append(a);
+      sessionList.append(li);
+
+      void 0;
+    };
+
+    const wordFrequency = await mergeWordFrequency();
+    const preparedWordFrequency = prepareWordFrequency(wordFrequency);
+
+    preparedWordFrequency.forEach(insertContentToDOM);
+
+    void 0;
+  } catch (ex) {
+    logger(onUpload.name, FILE_NAME, { limitWords, minRepeats, domain });
+    writeErrors(limitWords, minRepeats, domain);
   }
-  const storageData = await storage.readAll();
-  const wordFrequency = [];
-  for (let domain in storageData) {
-    wordFrequency.push(...storageData[domain].wordFrequency);
-  }
-  return concatWordFrequency(wordFrequency);
-}
-
-function concatWordFrequency(wordFrequency) {
-  const result = [];
-  const words = {};
-  for (let [word, frequency] of wordFrequency) {
-    words[word] = (words[word] || 0) + frequency;
-  }
-  for (let word in words) {
-    result.push([word, words[word]]);
-  }
-  return result;
-}
-
-function insertContent([word, frequency]) {
-  const liElement = document.createElement("li");
-  liElement.textContent = `${word} -> ${frequency} times`;
-  olElement.append(liElement);
-}
-
-async function isSearchWord() {
-  olElement.textContent = "";
-  const wordFrequency = await getWordFrequencyFromStorage();
-  const dataInputs = collectDataInputs();
-  const result = wordFrequency.filter(([word]) => word === dataInputs.searchWord);
-  processing(dataInputs, result);
-}
-
-function collectDataInputs() {
-  minRepeats = document.getElementById("session-min-repeats").value.trim();
-  limitWords = document.getElementById("session-limit-words").value.trim();
-  searchWord = document.getElementById("session-search-word").value.trim();
-  return {
-    minRepeats,
-    limitWords,
-    searchWord,
-  };
-}
-
-function processing({ minRepeats, limitWords } = dataInputs, wordFrequency) {
-  const min = minRepeats ? +minRepeats : 1;
-  const limit = limitWords ? +limitWords : wordFrequency.length;
-  const result = wordFrequency.filter(([_, frequency]) => frequency >= min);
-  result.sort((a, b) => b[1] - a[1]);
-  const len = result.length < limit ? result.length : limit;
-  for (let i = 0; i < len; ++i) {
-    insertContent(result[i]);
-  }
-}
-
-document.querySelector(".upload-button").addEventListener("click", uploadHandler);
-document.getElementById("session-search-word").addEventListener("input", isSearchWord);
+};
