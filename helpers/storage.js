@@ -1,7 +1,7 @@
 "use strict";
 
 import { logger } from "./logger.js";
-import { ErrorMessages } from "../constants/constants.js";
+import { writeErrors } from "./error.js";
 
 // The current file name needed for logger
 const FILE_NAME = "storage.js";
@@ -34,52 +34,51 @@ const prepareValue = function (data, key) {
 export const readAll = async function () {
   try {
     const data = await browser.storage.local.get();
+    const dataExist = !!Object.keys(data).length;
 
-    if (!data)
-      return {};
+    if (!dataExist)
+      return null;
     else
-      return data;
+      return Object.values(data);
   } catch (ex) {
     const isError = browser.runtime.lastError;
 
     logger(readAll.name, FILE_NAME, { arguments, isError });
-    console.error(ErrorMessages.READ_ALL_STORAGE, ex);
+    writeErrors(ex, isError);
 
-    return {};
+    return null;
   }
 };
 
 export const read = async function (key) {
-  if (!key) {
+  if (!key || typeof key !== "string") {
     logger(read.name, FILE_NAME, arguments);
-    console.error(`${key} ${ErrorMessages.WRONG_VALUE}`);
+    writeErrors(key);
 
-    return {};
+    return null;
   }
   try {
     const data = await browser.storage.local.get([key]);
+    const dataExist = !!Object.keys(data).length;
 
-    if (!data)
-      return {};
+    if (!dataExist)
+      return null;
     else
       return data[key];
   } catch (ex) {
     const isError = browser.runtime.lastError;
 
     logger(read.name, FILE_NAME, { arguments, isError });
-    console.error(ErrorMessages.READ_STORAGE, ex);
+    writeErrors(ex, isError);
 
-    return {};
+    return null;
   }
 };
 
 export const save = async function (data, key) {
   if (data.constructor !== Object || !data || !key) {
     logger(save.name, FILE_NAME, arguments);
-    console.error(
-      `${data} ${ErrorMessages.WRONG_VALUE}
-       ${key} ${ErrorMessages.WRONG_VALUE}`,
-    );
+    writeErrors(data, key);
   }
   try {
     const options = prepareValue(data, key);
@@ -91,19 +90,16 @@ export const save = async function (data, key) {
     const isError = browser.runtime.lastError;
 
     logger(save.name, FILE_NAME, { arguments, isError });
-    console.error(ErrorMessages.SAVE_STORAGE, ex);
+    writeErrors(ex, isError);
   }
 };
 
 export const createOptions = function (wordFrequency, data, partsURL) {
   if (!wordFrequency || !partsURL) {
     logger(createOptions.name, FILE_NAME, { arguments });
-    console.error(
-      `${wordFrequency} ${ErrorMessages.WRONG_VALUE}
-       ${partsURL} ${ErrorMessages.WRONG_VALUE}`,
-    );
+    writeErrors(wordFrequency, partsURL);
 
-    return {};
+    return null;
   }
   try {
     const { path, thirdDomain } = partsURL;
@@ -137,6 +133,6 @@ export const createOptions = function (wordFrequency, data, partsURL) {
     return options;
   } catch (ex) {
     logger(createOptions.name, FILE_NAME, arguments);
-    console.error(ex);
+    writeErrors(ex);
   }
 };
