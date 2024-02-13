@@ -103,11 +103,10 @@ const onUpdateTab = async function (tabID, { status }, tab) {
     return;
   try {
     const partsURL = url.composeParts(tab.url);
-    const partsExist = !!Object.keys(partsURL).length;
 
-    logger(onUpdateTab.name, FILE_NAME, { arguments, partsURL, partsExist });
+    logger(onUpdateTab.name, FILE_NAME, { arguments, partsURL });
 
-    if (!partsExist || blackList.includes(partsURL.secondDomain))
+    if (!partsURL || blackList.includes(partsURL.secondDomain))
       return;
 
     await observer(tabID, partsURL);
