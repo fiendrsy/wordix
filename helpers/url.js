@@ -37,7 +37,7 @@ const isHTTP = (url) => url.startsWith(FragmentsURL.HTTP) || url.startsWith(Frag
 const isValidURL = (url) => URL.canParse(url) && isHTTP(url) && !isLocalHost(url);
 
 export const composeParts = function (url) {
-  if (!isValidURL(url)) return {};
+  if (!isValidURL(url)) return null;
 
   const hostname = extractDomain(url);
   const thirdDomain = extractDomain(url, DomainLevels.THIRD);
