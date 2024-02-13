@@ -1,27 +1,29 @@
 "use strict";
 
-document.addEventListener("click", (e) => {
-  switch (e.target.id) {
+import * as dom from "./dom.js";
+
+const openTab = function (ev, tabName) {
+  const tabContent = dom.qSl(".tabcontent", true);
+  const tabLinks = dom.qSl(".tablinks", true);
+  const activeTab = dom.qSl("#" + tabName);
+
+  tabContent.forEach((el) => el.style.display = "none");
+  tabLinks.forEach((el) => el.className = el.className.replace(" active", ""));
+
+  activeTab.style.display = "block"
+  ev.target.className += " active";
+};
+
+dom.addLis(document, "click", (ev) => {
+  switch (ev.target.id) {
     case "parseTab":
-      openTab(e, "parse-tab");
+      openTab(ev, "parse-tab");
       break;
     case "sessionTab":
-      openTab(e, "session-tab");
+      openTab(ev, "session-tab");
       break;
   }
 });
 
-document.getElementById("parseTab").click();
+dom.qSl("#parseTab").click();
 
-function openTab(e, tabName) {
-  const tabcontent = document.querySelectorAll(".tabcontent");
-  const tablinks = document.querySelectorAll(".tablinks");
-  for (let el of tabcontent) {
-    el.style.display = "none";
-  }
-  for (let el of tablinks) {
-    el.className = el.className.replace(" active", "");
-  }
-  document.getElementById(tabName).style.display = "block";
-  e.target.className += " active";
-}

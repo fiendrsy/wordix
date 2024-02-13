@@ -9,7 +9,7 @@ import * as storage from "../../helpers/storage.js";
 const FILE_NAME = "parse.js";
 
 // The function is fired by clicked on parse button
-export const onParse = async function (tab, partsURL) {
+export const onParse = async function (ev, tab, partsURL) {
   try {
     dom.reWrite(".parsed-words__list");
 
@@ -117,7 +117,7 @@ export const onParse = async function (tab, partsURL) {
         li.append(label);
         parsedWords.append(li);
 
-        checkbox.addEventListener("change", onSelectWord);
+        dom.addLis(checkbox, "change", onSelectWord)
 
         void 0;
       } catch (ex) {
