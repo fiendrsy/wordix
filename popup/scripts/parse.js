@@ -1,6 +1,7 @@
 "use strict";
 
 import { logger } from "../../helpers/logger.js";
+import { writeErrors } from "../../helpers/error.js";
 import * as dom from "./dom.js";
 import * as tabs from "../../helpers/tabs.js";
 import * as storage from "../../helpers/storage.js";
@@ -11,13 +12,13 @@ const FILE_NAME = "parse.js";
 // The function is fired by clicked on parse button
 export const onParse = async function (ev, tab, partsURL) {
   try {
-    dom.reWrite(".parsed-words__list");
+    dom.text(".parsed-words__list");
 
     const minRepeats = dom.gVal("#min-repeats__input");
     const searchWord = dom.gVal("#search-word__input");
 
     const data = await storage.read(partsURL.secondDomain);
-    const response = await tabs.sendMessage(tab.id, { minRepeats, searchWord });
+    const response = await tabs.sendMessage(tab.id);
     const wordFrequency = JSON.parse(response);
 
     logger(onParse.name, FILE_NAME, {
@@ -34,10 +35,17 @@ export const onParse = async function (ev, tab, partsURL) {
       wordFrequency.filter(([word]) => !data.selectedWords.includes(word));
 
     const prepareWordFrequency = (wordFrequency) => {
+      const min = parseInt(minRepeats) || 1;
       const result = !data ? wordFrequency : excludeSelectedWords(wordFrequency);
 
       // Sorting result in descending order
-      return result.sort((a, b) => b[1] - a[1]);
+      const preparedWordFrequency = result
+        .filter(([_, frequency]) => frequency >= min)
+        .sort((a, b) => b[1] - a[1]);
+
+      return searchWord !== ""
+        ? preparedWordFrequency.filter(([word]) => word === searchWord)
+        : preparedWordFrequency;
     };
 
     const addSelectedWordToStorage = async function (word) {
@@ -54,7 +62,7 @@ export const onParse = async function (ev, tab, partsURL) {
         void 0;
       } catch (ex) {
         logger(addSelectedWordToStorage.name, FILE_NAME, arguments);
-        console.error(ex);
+        writeErrors(ex);
       }
     };
 
@@ -74,7 +82,7 @@ export const onParse = async function (ev, tab, partsURL) {
         void 0;
       } catch (ex) {
         logger(onSelectWord.name, FILE_NAME, arguments);
-        console.error(ex);
+        writeErrors(ex);
       }
     };
 
@@ -117,12 +125,12 @@ export const onParse = async function (ev, tab, partsURL) {
         li.append(label);
         parsedWords.append(li);
 
-        dom.addLis(checkbox, "change", onSelectWord)
+        dom.addLis(checkbox, "change", onSelectWord);
 
         void 0;
       } catch (ex) {
         logger(insertContentToDOM.name, FILE_NAME, arguments);
-        console.error(ex);
+        writeErrors(ex);
       }
     };
 
@@ -133,6 +141,6 @@ export const onParse = async function (ev, tab, partsURL) {
     void 0;
   } catch (ex) {
     logger(onParse.name, FILE_NAME, arguments);
-    console.error(ex);
+    writeErrors(ex);
   }
 };

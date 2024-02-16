@@ -13,7 +13,7 @@ export const printHostname = (hostname) => {
     return;
   }
 
-  dom.reWrite(".current-site-address", hostname);
+  dom.text(".current-site-address", hostname);
 
   void 0;
 };

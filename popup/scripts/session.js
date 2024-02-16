@@ -9,7 +9,7 @@ const FILE_NAME = "session.js";
 
 export const onUpload = async function () {
   try {
-    dom.reWrite("#session-list");
+    dom.text("#session-list");
 
     const minRepeats = dom.gVal("#session-min-repeats");
     const limitWords = dom.gVal("#session-limit-words");
@@ -18,7 +18,7 @@ export const onUpload = async function () {
 
     const mergeWordFrequency = async function () {
       try {
-        const data = !!domain
+        const data = domain !== ""
           ? await storage.read(domain)
           : await storage.readAll();
 
@@ -55,7 +55,7 @@ export const onUpload = async function () {
         .sort((a, b) => b[1] - a[1])
         .slice(0, limit);
 
-      return !!searchWord
+      return searchWord !== ""
         ? preparedWordFrequency.filter(([word]) => word === searchWord)
         : preparedWordFrequency;
     };

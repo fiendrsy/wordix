@@ -97,9 +97,9 @@ export const addLis = (target, event, fn, ...args) => {
   void 0;
 };
 
-export const reWrite = (sl, text = "") => {
+export const text = (sl, text = "") => {
   if (!isValidSelector(sl)) {
-    logger(reWrite.name, FILE_NAME, { sl, text });
+    logger(text.name, FILE_NAME, { sl, text });
     writeErrors(sl, text);
 
     return;
