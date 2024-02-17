@@ -7,60 +7,72 @@ import { logger } from "../../helpers/logger.js";
 
 const FILE_NAME = "session.js";
 
-export const onUpload = async function () {
+const mergeWordFrequency = async function () {
+  try {
+    const domain = dom.gVal("#session-by-site");
+
+    const data = domain !== ""
+      ? await storage.read(domain)
+      : await storage.readAll();
+
+    if (!data) {
+      logger(mergeWordFrequency.name, FILE_NAME, { data, domain });
+      writeErrors(data, domain);
+
+      return [];
+    }
+
+    const mergedWordFrequency = []
+      .concat(data)
+      .flatMap((domainData) => domainData.wordFrequency)
+      .reduce((acc, [word, frequency]) => {
+        acc[word] = (acc[word] || 0) + frequency;
+
+        return acc;
+      }, {});
+
+    logger(mergeWordFrequency.name, FILE_NAME, { domain, data, mergedWordFrequency });
+
+    return Object.entries(mergedWordFrequency);
+  } catch (ex) {
+    logger(mergeWordFrequency.name, FILE_NAME, { data, domain });
+    writeErrors(data, domain);
+
+    return [];
+  }
+};
+
+const prepareWordFrequency = function (wordFrequency) {
+  try {
+    const minRepeats = +dom.gVal("#session-min-repeats") || 1;
+    const limitWords = +dom.gVal("#session-limit-words") || wordFrequency.length;
+    const searchWord = dom.gVal("#session-search-word");
+
+    const preparedWordFrequency = wordFrequency
+      .filter(([_, frequency]) => frequency >= minRepeats)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, limitWords);
+
+    if (searchWord !== "")
+      return preparedWordFrequency.filter(([word]) => word === searchWord);
+    else
+      return preparedWordFrequency;
+  } catch (ex) {
+    logger(prepareWordFrequency.name, FILE_NAME, arguments);
+    writeErrors(ex);
+  }
+};
+
+export const onSession = async function () {
   try {
     dom.text("#session-list");
 
-    const minRepeats = dom.gVal("#session-min-repeats");
-    const limitWords = dom.gVal("#session-limit-words");
-    const searchWord = dom.gVal("#session-search-word");
-    const domain = dom.gVal("#session-by-site");
+    const wordFrequency = await mergeWordFrequency();
+    const preparedWordFrequency = prepareWordFrequency(wordFrequency);
 
-    const mergeWordFrequency = async function () {
-      try {
-        const data = domain !== ""
-          ? await storage.read(domain)
-          : await storage.readAll();
+    logger(onSession.name, FILE_NAME, { wordFrequency, preparedWordFrequency });
 
-        if (!data) {
-          logger(mergeWordFrequency.name, FILE_NAME, { data, domain });
-          writeErrors(data, domain);
-
-          return [];
-        }
-
-        const mergedWordFrequency = []
-          .concat(data)
-          .flatMap((domainData) => domainData.wordFrequency)
-          .reduce((acc, [word, frequency]) => {
-            acc[word] = (acc[word] || 0) + frequency;
-
-            return acc;
-          }, {});
-
-        return Object.entries(mergedWordFrequency);
-      } catch (ex) {
-        logger(mergeWordFrequency.name, FILE_NAME, { data, domain });
-        writeErrors(data, domain);
-
-        return [];
-      }
-    };
-
-    const prepareWordFrequency = function (wordFrequency) {
-      const min = parseInt(minRepeats) || 1;
-      const limit = parseInt(limitWords) || wordFrequency.length;
-      const preparedWordFrequency = wordFrequency
-        .filter(([_, frequency]) => frequency >= min)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, limit);
-
-      return searchWord !== ""
-        ? preparedWordFrequency.filter(([word]) => word === searchWord)
-        : preparedWordFrequency;
-    };
-
-    const insertContentToDOM = function ([word, frequency]) {
+    preparedWordFrequency.forEach(([word, frequency]) => {
       let url = `https://context.reverso.net/translation/english-russian/${word}`;
       let wordFrequency = `${word} -> ${frequency} times`;
 
@@ -76,16 +88,11 @@ export const onUpload = async function () {
       sessionList.append(li);
 
       void 0;
-    };
-
-    const wordFrequency = await mergeWordFrequency();
-    const preparedWordFrequency = prepareWordFrequency(wordFrequency);
-
-    preparedWordFrequency.forEach(insertContentToDOM);
+    });
 
     void 0;
   } catch (ex) {
     logger(onUpload.name, FILE_NAME, { limitWords, minRepeats, domain });
-    writeErrors(limitWords, minRepeats, domain);
+    writeErrors(ex);
   }
 };

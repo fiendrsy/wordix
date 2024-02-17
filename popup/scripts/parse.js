@@ -1,21 +1,79 @@
 "use strict";
 
+import * as dom from "./dom.js";
 import { logger } from "../../helpers/logger.js";
 import { writeErrors } from "../../helpers/error.js";
-import * as dom from "./dom.js";
 import * as tabs from "../../helpers/tabs.js";
 import * as storage from "../../helpers/storage.js";
 
 // The current file name needed for logger
 const FILE_NAME = "parse.js";
 
-// The function is fired by clicked on parse button
+// Exclude words that were selected from wordFrequency
+const excludeSelectedWords = (wordFrequency, selectedWords) =>
+  wordFrequency.filter(([word]) => !selectedWords.includes(word));
+
+const prepareWordFrequency = (wordFrequency, data) => {
+  try {
+    const result = !data
+      ? wordFrequency
+      : excludeSelectedWords(wordFrequency, data.selectedWords);
+
+    const minRepeats = +dom.gVal("#min-repeats__input") || 1;
+    const searchWord = dom.gVal("#search-word__input");
+
+    // Sorting result in descending order
+    const preparedWordFrequency = result
+      .filter(([_, frequency]) => frequency >= minRepeats)
+      .sort((a, b) => b[1] - a[1]);
+
+    if (searchWord !== "")
+      return preparedWordFrequency.filter(([word]) => word === searchWord);
+    else
+      return preparedWordFrequency;
+  } catch (ex) {
+    logger(prepareWordFrequency.name, FILE_NAME, arguments);
+    writeErrors(ex);
+  }
+};
+
+const addSelectedWordToStorage = async function (word, data, partsURL) {
+  try {
+    if (!data) return;
+
+    const options = storage.createOptions(data.wordFrequency, data, partsURL);
+    options.selectedWords.push(word);
+
+    await storage.save(options, partsURL.secondDomain);
+
+    void 0;
+  } catch (ex) {
+    logger(addSelectedWordToStorage.name, FILE_NAME, arguments);
+    writeErrors(ex);
+  }
+};
+
+// Event handler that triggers when a word is selected
+const onSelectWord = async function (ev, data, partsURL) {
+  try {
+    // ev.target is equals input(type: checkbox) element
+    const li = ev.target.parentNode;
+    const [word] = li.innerText.split(" ");
+
+    await addSelectedWordToStorage(word, data, partsURL);
+
+    li.remove();
+
+    void 0;
+  } catch (ex) {
+    logger(onSelectWord.name, FILE_NAME, arguments);
+    writeErrors(ex);
+  }
+};
+
 export const onParse = async function (ev, tab, partsURL) {
   try {
     dom.text(".parsed-words__list");
-
-    const minRepeats = dom.gVal("#min-repeats__input");
-    const searchWord = dom.gVal("#search-word__input");
 
     const data = await storage.read(partsURL.secondDomain);
     const response = await tabs.sendMessage(tab.id);
@@ -26,67 +84,11 @@ export const onParse = async function (ev, tab, partsURL) {
       data,
       response,
       wordFrequency,
-      minRepeats,
-      searchWord,
     });
 
-    // Exclude words that were selected from wordFrequency
-    const excludeSelectedWords = (wordFrequency) =>
-      wordFrequency.filter(([word]) => !data.selectedWords.includes(word));
+    const preparedWordFrequency = prepareWordFrequency(wordFrequency, data);
 
-    const prepareWordFrequency = (wordFrequency) => {
-      const min = parseInt(minRepeats) || 1;
-      const result = !data ? wordFrequency : excludeSelectedWords(wordFrequency);
-
-      // Sorting result in descending order
-      const preparedWordFrequency = result
-        .filter(([_, frequency]) => frequency >= min)
-        .sort((a, b) => b[1] - a[1]);
-
-      return searchWord !== ""
-        ? preparedWordFrequency.filter(([word]) => word === searchWord)
-        : preparedWordFrequency;
-    };
-
-    const addSelectedWordToStorage = async function (word) {
-      try {
-        if (!data) return;
-
-        const options = storage.createOptions(data.wordFrequency, data, partsURL);
-        options.selectedWords.push(word);
-
-        logger(addSelectedWordToStorage.name, FILE_NAME, { arguments, data, options });
-
-        await storage.save(options, partsURL.secondDomain);
-
-        void 0;
-      } catch (ex) {
-        logger(addSelectedWordToStorage.name, FILE_NAME, arguments);
-        writeErrors(ex);
-      }
-    };
-
-    // Event handler that triggers when a word is selected
-    const onSelectWord = async function (ev) {
-      try {
-        // ev.target is equals input(type: checkbox) element
-        const li = ev.target.parentNode;
-        const [word] = li.innerText.split(" ");
-
-        logger(onSelectWord.name, FILE_NAME, { arguments, li, word });
-
-        await addSelectedWordToStorage(word);
-
-        li.remove();
-
-        void 0;
-      } catch (ex) {
-        logger(onSelectWord.name, FILE_NAME, arguments);
-        writeErrors(ex);
-      }
-    };
-
-    const insertContentToDOM = function ([word, frequency], index) {
+    preparedWordFrequency.forEach(([word, frequency], index) => {
       try {
         let url = `https://context.reverso.net/translation/english-russian/${word}`;
         let wordFrequency = `${word} -> ${frequency} times`;
@@ -97,18 +99,6 @@ export const onParse = async function (ev, tab, partsURL) {
         const label = dom.cEl("label");
         const checkbox = dom.cEl("input");
         const parsedWords = dom.qSl(".parsed-words__list");
-
-        logger(insertContentToDOM.name, FILE_NAME, {
-          arguments,
-          url,
-          wordFrequency,
-          checkbox,
-          a,
-          li,
-          label,
-          checkbox,
-          parsedWords,
-        });
 
         a.setAttribute("href", url);
         a.classList.add("context-link");
@@ -125,18 +115,14 @@ export const onParse = async function (ev, tab, partsURL) {
         li.append(label);
         parsedWords.append(li);
 
-        dom.addLis(checkbox, "change", onSelectWord);
+        dom.addLis(checkbox, "change", onSelectWord, data, partsURL);
 
         void 0;
       } catch (ex) {
         logger(insertContentToDOM.name, FILE_NAME, arguments);
         writeErrors(ex);
       }
-    };
-
-    const preparedWordFrequency = prepareWordFrequency(wordFrequency);
-
-    preparedWordFrequency.forEach(insertContentToDOM);
+    });
 
     void 0;
   } catch (ex) {
