@@ -15,7 +15,7 @@ const selectDomain = function (domains, domainLevel) {
   }
 };
 
-const normalizeDomain = (domain) => domain.toString().toLowerCase().trim();
+const normalizeDomain = (domain) => String(domain).toLowerCase().trim();
 
 const extractDomain = function (url, domainLevel) {
   const hostname = new URL(url).hostname;
