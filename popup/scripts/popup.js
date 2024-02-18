@@ -2,7 +2,7 @@
 
 import * as dom from "./dom.js";
 import { onParse } from "./parse.js";
-import { onUpload } from "./session.js";
+import { onSession } from "./session.js";
 import { printHostname } from "./print-hostname.js";
 import { logger } from "../../helpers/logger.js";
 import * as tabs from "../../helpers/tabs.js";
@@ -27,7 +27,11 @@ const popup = async function () {
     dom.addLis(".parse-button", "click", onParse, tab, partsURL);
     dom.addLis("#search-word__input", "input", onParse, tab, partsURL);
     dom.addLis("#min-repeats__input", "input", onParse, tab, partsURL);
-    dom.addLis(".upload-button", "click", onUpload);
+    dom.addLis(".upload-button", "click", onSession);
+    dom.addLis("#session-min-repeats", "input", onSession);
+    dom.addLis("#session-limit-words", "input", onSession);
+    dom.addLis("#session-by-site", "input", onSession);
+    dom.addLis("#session-search-word", "input", onSession);
 
     void 0;
   } catch (ex) {
