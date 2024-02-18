@@ -1,7 +1,8 @@
 "use strict";
 
-import { ErrorMessages } from "../constants/constants.js";
+import { writeErrors } from "./error.js";
 import { logger } from "./logger.js";
+import { ErrorMessages } from "../constants/constants.js";
 
 // The current file name needed for logger
 const FILE_NAME = "tabs.js";
@@ -9,12 +10,12 @@ const FILE_NAME = "tabs.js";
 export const sendMessage = async function (tabID, message = {}) {
   if (!tabID) {
     logger(sendMessage.name, FILE_NAME, { arguments });
-    console.error(`${tabID} ${ErrorMessages.WRONG_VALUE}`);
+    writeErrors(tabID);
 
-    throw new Error(ErrorMessages.ACTIVE_TAB, ex);
+    throw new Error(ErrorMessages.WRONG_VALUE, tabID);
   }
   try {
-    const response = browser.tabs.sendMessage(tabID, message);
+    const response = await browser.tabs.sendMessage(tabID, message);
 
     logger(sendMessage.name, FILE_NAME, { arguments, response });
 
@@ -23,9 +24,9 @@ export const sendMessage = async function (tabID, message = {}) {
     const isError = browser.runtime.lastError;
 
     logger(sendMessage.name, FILE_NAME, { arguments, isError });
-    console.error(ErrorMessages.SEND_TAB, ex);
+    writeErrors(ex, isError);
 
-    throw new Error(ErrorMessages.ACTIVE_TAB, ex);
+    throw new Error(ex.message, ex);
   }
 };
 
@@ -42,8 +43,8 @@ export const getActive = async function () {
     const isError = browser.runtime.lastError;
 
     logger(sendMessage.name, FILE_NAME, { arguments, isError });
-    console.error(ErrorMessages.ACTIVE_TAB, ex);
+    writeErrors(ex, isError);
 
-    throw new Error(ErrorMessages.ACTIVE_TAB, ex);
+    throw new Error(ex.message, ex);
   }
 };
