@@ -6,9 +6,41 @@ import { writeErrors } from "./error.js";
 // The current file name needed for logger
 const FILE_NAME = "storage.js";
 
-const excludeDuplicates = (items) => [...new Set(items)];
+const isFlat = (values) =>
+  values.filter((value) => Array.isArray(value)).length === values.length;
 
-const validateValues = (values) => values.filter((value) => !!value?.length); // Hack
+const excludeDuplicates = (values) => {
+  if (isFlat(values))
+    return values.map((arr) => [...new Set(arr)]);
+  else
+    return [...new Set(values)];
+};
+
+const validateValues = (values) => {
+  const uniqItems = excludeDuplicates(values);
+
+  return uniqItems.filter((value) => {
+    if (Array.isArray(value)) {
+      // Length of the value before validations
+      const startLen = value.length;
+      const result = validateValues(value);
+
+     /**
+       If the result length is not equal to the startLen var,
+       it means the value is not valid
+     **/
+      return result.length === startLen;
+    }
+
+    if (typeof value === "string" && value.length > 0)
+      return true;
+
+    if (typeof value === "number")
+      return true;
+
+    return false;
+  });
+};
 
 const prepareValue = function (data, key) {
   const options = {};
@@ -17,13 +49,8 @@ const prepareValue = function (data, key) {
   for (let prop in prepareData) {
     let value = prepareData[prop];
 
-    if (Array.isArray(value)) {
-      const uniqItems = excludeDuplicates(value);
-
-      prepareData[prop] = validateValues(uniqItems);
-    } else if (typeof value !== "string") {
-      prepareData[prop] = String(value);
-    }
+    if (Array.isArray(value))
+      prepareData[prop] = validateValues(value);
   }
 
   options[key] = prepareData;
@@ -106,7 +133,7 @@ export const createOptions = function (wordFrequency, data, partsURL) {
 
     const createdAt = data
       ? data.createdAt
-      : new Date();
+      : Date.now();
 
     const selectedWords = data
       ? [...data.selectedWords]
