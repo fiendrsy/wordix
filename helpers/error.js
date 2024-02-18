@@ -34,6 +34,6 @@ export const writeErrors = (...reasons) => {
       return;
     }
 
-    console.log(reason);
+    console.info(reason);
   });
 };
