@@ -4,14 +4,20 @@ import { logger } from "../../helpers/logger.js";
 import { writeErrors } from "../../helpers/error.js";
 
 const FILE_NAME = "dom.js";
-const HTML_TAGS = [
-  "div", "p", "span", "a", "img", "input", "button", "ul", "li", "ol", "form",
-  "label", "h1", "h2", "h3", "h4", "h5", "h6", "header", "nav", "footer", "section",
-  "article", "main", "aside", "header", "footer", "table", "tr", "td", "th", "tbody",
-  "thead", "tfoot", "iframe", "video", "audio", "blockquote", "hr", "br", "textarea",
-  "select", "option", "fieldset", "legend", "label", "cite", "abbr", "address", "cite",
-  "code", "em", "strong", "sub", "sup", "b", "i", "u", "strike", "small", "big", "pre",
-];
+
+const HTML_TAGS = new Set([
+  "a", "article", "aside", "audio", "b", "blockquote", "br", "button", "cite", "code",
+  "div", "em", "footer", "form", "h1", "h2", "h3", "h4", "h5", "h6", "header", "hr",
+  "i", "iframe", "img", "input", "label", "li", "main", "nav", "ol", "option", "p",
+  "section", "select", "span", "strike", "strong", "sub", "sup", "table", "tbody", "td",
+  "tfoot", "th", "thead", "tr", "u", "ul", "video"
+]);
+
+export const gDoc = () => document;
+
+export const gBody = () => document.body;
+
+const isDOMElement = (target) => target instanceof HTMLElement || target === gDoc();
 
 const isExistsSelector = (sl) => document.querySelector(sl) instanceof HTMLElement;
 
@@ -47,7 +53,7 @@ export const qSl = (sl, all = false) => {
 };
 
 export const cEl = (el) => {
-  if (typeof el !== "string" || !HTML_TAGS.includes(el)) {
+  if (typeof el !== "string" || !HTML_TAGS.has(el)) {
     logger(cEl.name, FILE_NAME, { el });
     writeErrors(el);
 
@@ -68,7 +74,24 @@ export const gVal = (sl) => {
   const el = qSl(sl);
 
   return el instanceof HTMLInputElement ? el.value.trim() : "";
-}
+};
+
+const determineTarget = (target) => {
+  let result;
+
+  if (isDOMElement(target)) {
+    result = target;
+  } else if (isValidSelector(target)) {
+    result = qSl(target);
+  } else {
+    logger(addLis.name, FILE_NAME, target);
+    writeErrors(target);
+
+    return null;
+  }
+
+  return result;
+};
 
 export const addLis = (target, event, fn, ...args) => {
   if (typeof event !== "string" || typeof fn !== "function") {
@@ -79,15 +102,11 @@ export const addLis = (target, event, fn, ...args) => {
   }
 
   const wrapper = async (ev) => await fn(ev, ...args);
-  let el;
+  const el = determineTarget(target);
 
-  if (target instanceof HTMLElement || target === document) {
-    el = target;
-  } else if (isValidSelector(target)) {
-    el = qSl(target);
-  } else {
-    logger(addLis.name, FILE_NAME, { target });
-    writeErrors(target);
+  if (!el) {
+    logger(addLis.name, FILE_NAME, target, el);
+    writeErrors(target, el);
 
     return;
   }
@@ -97,21 +116,44 @@ export const addLis = (target, event, fn, ...args) => {
   void 0;
 };
 
-export const text = (sl, text = "") => {
-  if (!isValidSelector(sl)) {
-    logger(text.name, FILE_NAME, { sl, text });
-    writeErrors(sl, text);
+export const addCl = (el, cl) => {
+  if (!isDOMElement(el) || typeof cl !== "string") {
+    logger(addCl.name, FILE_NAME, el, cl);
+    writeErrors(el, cl);
 
     return;
   }
 
-  const el = qSl(sl);
+  el.classList.add(cl);
+
+  void 0;
+}
+
+export const setAttr = (el, attr, val) => {
+  if (!isDOMElement(el) || typeof attr !== "string" || typeof val !== "string") {
+    logger(setAttr.name, FILE_NAME, el, attr, val);
+    writeErrors(el, attr, val);
+
+    return;
+  }
+
+  el.setAttribute(attr, val);
+
+  void 0;
+}
+
+export const text = (target, text = "") => {
+  const el = determineTarget(target);
+
+  if (!el) {
+    logger(addLis.name, FILE_NAME, target, el);
+    writeErrors(target, el);
+
+    return;
+  }
 
   el.textContent = text;
 
   void 0;
 };
 
-export const gDoc = () => document;
-
-export const gBody = () => document.body;
