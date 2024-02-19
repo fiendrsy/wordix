@@ -2,8 +2,11 @@
 
 import { writeErrors } from "./error.js";
 
-const isArgumets = (value) =>
-  Object.prototype.toString.call(value) === "[object Arguments]";
+const isArgumets = (value) => {
+  const ARGUMENTS_OBJECT = "[object Arguments]";
+
+  return Object.prototype.toString.call(value) === ARGUMENTS_OBJECT;
+};
 
 const isObject = (value) => value?.constructor === Object;
 
@@ -15,7 +18,7 @@ export const logger = function (funcName, fileName, ...args) {
   }
 
   const log = {
-    funcName: funcName,
+    funcName,
     funcArgs: [],
     localENV: [],
   };
@@ -24,9 +27,12 @@ export const logger = function (funcName, fileName, ...args) {
 
   values.forEach((value) => {
     if (isObject(value)) {
-      return isArgumets(value)
-        ? (log.funcArgs = [...value])
-        : log.localENV.push(value);
+      if (isArgumets(value))
+        log.funcArgs = [...value];
+      else
+        log.localENV.push(value);
+
+      return;
     }
 
     log.localENV.push(value);
@@ -34,5 +40,4 @@ export const logger = function (funcName, fileName, ...args) {
 
   console.info(fileName + ":");
   console.dir(log);
-}
-
+};
