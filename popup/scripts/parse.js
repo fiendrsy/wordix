@@ -19,15 +19,14 @@ const prepareWordFrequency = (wordFrequency, data) => {
       ? wordFrequency
       : excludeSelectedWords(wordFrequency, data.selectedWords);
 
-    const minRepeats = +dom.gVal("#min-repeats__input") || 1;
+    const minRepeats = +dom.gVal("#min-repeats__input") || 1; // HACK
     const searchWord = dom.gVal("#search-word__input");
 
     // Sorting result in descending order
     const preparedWordFrequency = result
       .filter(([_, frequency]) => frequency >= minRepeats)
-      .sort((a, b) => b[1] - a[1]);
 
-    if (searchWord !== "")
+    if (searchWord.length > 0)
       return preparedWordFrequency.filter(([word]) => word === searchWord);
     else
       return preparedWordFrequency;
@@ -100,17 +99,18 @@ export const onParse = async function (ev, tab, partsURL) {
         const checkbox = dom.cEl("input");
         const parsedWords = dom.qSl(".parsed-words__list");
 
-        a.setAttribute("href", url);
-        a.classList.add("context-link");
+        dom.setAttr(a, "href", url);
+        dom.addCl(a, "context-link");
 
         checkbox.setAttribute("type", "checkbox");
         checkbox.id = checkBoxID;
 
         label.htmlFor = checkBoxID;
-        a.textContent = wordFrequency;
+
+        dom.text(a, wordFrequency);
 
         label.append(a);
-        li.setAttribute("id", `${index}`);
+        dom.setAttr(li, "id", `${index}`);
         li.append(checkbox);
         li.append(label);
         parsedWords.append(li);

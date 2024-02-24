@@ -11,7 +11,7 @@ const mergeWordFrequency = async function () {
   try {
     const domain = dom.gVal("#session-by-site");
 
-    const data = domain !== ""
+    const data = domain.length > 0
       ? await storage.read(domain)
       : await storage.readAll();
 
@@ -44,16 +44,15 @@ const mergeWordFrequency = async function () {
 
 const prepareWordFrequency = function (wordFrequency) {
   try {
-    const minRepeats = +dom.gVal("#session-min-repeats") || 1;
-    const limitWords = +dom.gVal("#session-limit-words") || wordFrequency.length;
+    const minRepeats = +dom.gVal("#session-min-repeats") || 1; // HACK
+    const limitWords = +dom.gVal("#session-limit-words") || wordFrequency.length; // HACK
     const searchWord = dom.gVal("#session-search-word");
 
     const preparedWordFrequency = wordFrequency
       .filter(([_, frequency]) => frequency >= minRepeats)
-      .sort((a, b) => b[1] - a[1])
       .slice(0, limitWords);
 
-    if (searchWord !== "")
+    if (searchWord.length > 0)
       return preparedWordFrequency.filter(([word]) => word === searchWord);
     else
       return preparedWordFrequency;
@@ -80,9 +79,9 @@ export const onSession = async function () {
       const a = dom.cEl("a");
       const sessionList = dom.qSl("#session-list");
 
-      a.setAttribute("href", url);
-      a.classList.add("context-link");
-      a.textContent = wordFrequency;
+      dom.setAttr(a, "href", url);
+      dom.addCl(a, "context-link");
+      dom.text(a, wordFrequency);
 
       li.append(a);
       sessionList.append(li);
