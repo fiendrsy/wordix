@@ -1,5 +1,5 @@
 (function () {
-  const DELAY = 3000;
+  const DELAY = 2500;
 
   // Timeout required to run the script after all other scripts on the page
   setTimeout(() => {
@@ -75,20 +75,15 @@
         return acc;
       }, wordFrequency);
 
-      return Object.entries(wordFrequency).sort((a, b) => b[1] - a[1]);
+      return Object.entries(wordFrequency);
     };
 
-    const wordFrequencyHandler = (req, sender, res) => {
-      const wordFrequency = calculateWordFrequency();
-      const data = JSON.stringify(wordFrequency);
+    const message = {
+      data: JSON.stringify(calculateWordFrequency()),
+      from: "INJECT_SCRIPT",
+    }
 
-      console.clear();
-      console.log(wordFrequency);
-
-      res(data);
-    };
-
-    browser.runtime.onMessage.addListener(wordFrequencyHandler);
+    browser.runtime.sendMessage("", message);
 
     void 0;
   }, DELAY);
