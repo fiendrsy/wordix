@@ -2,7 +2,7 @@
 
 > ### Parse tab
 
-- Click on the parse button, will show you all words on the current page.
+- Click on the parse button, will show you all words on the current domain.
 - You can to select a word and never have to parse it again.
 
 > ### Session tab
