@@ -7,13 +7,13 @@ import { writeErrors } from "./error.js";
 const FILE_NAME = "storage.js";
 
 const isFlat = (values) =>
-  values.filter((value) => Array.isArray(value)).length === values.length;
+  values.filter((value) => Array.isArray(value)).length !== values.length;
 
 const excludeDuplicates = (values) => {
   if (isFlat(values))
-    return values.map((arr) => [...new Set(arr)]);
-  else
     return [...new Set(values)];
+  else
+    return values.map((arr) => [...new Set(arr)]);
 };
 
 const validateValues = (values) => {
