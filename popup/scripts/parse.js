@@ -3,7 +3,6 @@
 import * as dom from "./dom.js";
 import { logger } from "../../helpers/logger.js";
 import { writeErrors } from "../../helpers/error.js";
-import * as tabs from "../../helpers/tabs.js";
 import * as storage from "../../helpers/storage.js";
 
 // The current file name needed for logger
@@ -25,6 +24,7 @@ const prepareWordFrequency = (wordFrequency, data) => {
     // Sorting result in descending order
     const preparedWordFrequency = result
       .filter(([_, frequency]) => frequency >= minRepeats)
+      .sort((a, b) => b[1] - a[1]);
 
     if (searchWord.length > 0)
       return preparedWordFrequency.filter(([word]) => word === searchWord);
@@ -38,8 +38,6 @@ const prepareWordFrequency = (wordFrequency, data) => {
 
 const addSelectedWordToStorage = async function (word, data, partsURL) {
   try {
-    if (!data) return;
-
     const options = storage.createOptions(data.wordFrequency, data, partsURL);
     options.selectedWords.push(word);
 
@@ -75,13 +73,15 @@ export const onParse = async function (ev, tab, partsURL) {
     dom.text(".parsed-words__list");
 
     const data = await storage.read(partsURL.secondDomain);
-    const response = await tabs.sendMessage(tab.id);
-    const wordFrequency = JSON.parse(response);
+
+    if (!data)
+      return;
+
+    const wordFrequency = data.wordFrequency;
 
     logger(onParse.name, FILE_NAME, {
       arguments,
       data,
-      response,
       wordFrequency,
     });
 

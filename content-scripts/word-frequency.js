@@ -34,13 +34,14 @@
     };
 
     const isContractWord = (word) => {
-      if (typeof word !== "string" || word === "")
+      if (typeof word !== "string" || word.length === 0)
         return false;
-
-      return isLatinLetter(word[0]) && isLatinLetter(word.at(-1)) && /[']/g.test(word);
+      else
+        return isLatinLetter(word[0]) && isLatinLetter(word.at(-1)) && /[']/g.test(word);
     };
 
-    const isValidValue = (value) => isLatinLetter(value) && !SERVICE_WORDS.has(value);
+    const isValidValue = (value) =>
+      isLatinLetter(value) && !SERVICE_WORDS.has(value);
 
     const validateValue = (value) =>
       value?.length > 1 && isValidValue(value) || isContractWord(value);

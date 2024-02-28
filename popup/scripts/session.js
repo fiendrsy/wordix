@@ -50,7 +50,8 @@ const prepareWordFrequency = function (wordFrequency) {
 
     const preparedWordFrequency = wordFrequency
       .filter(([_, frequency]) => frequency >= minRepeats)
-      .slice(0, limitWords);
+      .slice(0, limitWords)
+      .sort((a, b) => b[1] - a[1]);
 
     if (searchWord.length > 0)
       return preparedWordFrequency.filter(([word]) => word === searchWord);
