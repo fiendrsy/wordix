@@ -21,11 +21,8 @@
 
     const text = document.body.innerText;
 
-    const isLatinLetter = (value) => {
-      if (value.length > 1)
-        return [...value].every((char) => isLatinLetter(char));
-
-      let charCode = value.charCodeAt();
+    const isLatinLetter = (letter) => {
+      let charCode = letter.charCodeAt();
 
       return (
         (charCode >= UPPERCASE_A_CODE && charCode <= UPPERCASE_Z_CODE) ||
@@ -41,7 +38,7 @@
     };
 
     const isValidValue = (value) =>
-      isLatinLetter(value) && !SERVICE_WORDS.has(value);
+      [...value].every(isLatinLetter) && !SERVICE_WORDS.has(value);
 
     const validateValue = (value) =>
       value?.length > 1 && isValidValue(value) || isContractWord(value);
