@@ -102,7 +102,7 @@ export const onParse = async function (ev, tab, partsURL) {
         dom.setAttr(a, "href", url);
         dom.addCl(a, "context-link");
 
-        checkbox.setAttribute("type", "checkbox");
+        dom.setAttr(checkbox, "type", "checkbox");
         checkbox.id = checkBoxID;
 
         label.htmlFor = checkBoxID;
