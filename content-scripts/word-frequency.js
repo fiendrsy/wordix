@@ -15,7 +15,7 @@
     const SERVICE_WORDS = new Set([
       "an", "a", "the", "and", "but", "or", "for", "nor", "so", "yet",
       "to", "in", "on", "at", "by", "with", "as", "of", "from", "about",
-      "has", "it’s", "its", "it", "not", "is", "he", "do", "you",
+      "has", "it’s", "its", "it's", "it", "not", "is", "he", "do", "you",
 		  "can", "be", "if", "no", "are"
     ]);
 
