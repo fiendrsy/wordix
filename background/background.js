@@ -48,29 +48,32 @@ const fetchWordFrequency = function (cachedWordFrequency, wordFrequency) {
 
 const addNewContent = async function (wordFrequency, partsURL) {
   try {
-    const options = storage.createOptions(wordFrequency, null, partsURL);
+    const options = await storage.createOptions(partsURL, wordFrequency);
 
     logger(addNewContent.name, FILE_NAME, { arguments, options });
 
     await storage.save(options, partsURL.secondDomain);
+
+    void 0;
   } catch (ex) {
     logger(addNewContent.name, FILE_NAME, arguments);
     writeErrors(ex);
   }
 };
 
-const updateContent = async function (partsURL, data, wordFrequency) {
+const updateContent = async function (partsURL, wordFrequency, cachedWordFrequency) {
   try {
-    const cachedWordFrequency = data.wordFrequency;
-    const options = storage.createOptions(
-      fetchWordFrequency(cachedWordFrequency, wordFrequency),
-      data,
+    const options = await storage.createOptions(
       partsURL,
+      fetchWordFrequency(cachedWordFrequency, wordFrequency),
+      wordFrequency
     );
 
     logger(updateContent.name, FILE_NAME, { arguments, cachedWordFrequency, options });
 
     await storage.save(options, partsURL.secondDomain);
+
+    void 0;
   } catch (ex) {
     logger(updateContent.name, FILE_NAME, arguments);
     writeErrors(ex);
@@ -88,12 +91,12 @@ const observer = async function (wordFrequency, partsURL) {
       return;
     }
 
-    const isVisitedPath = data.paths.includes(partsURL.path);
+    const isVisitedPath = data.paths.has(partsURL.path);
 
     if (!isVisitedPath)
-      await updateContent(partsURL, data, wordFrequency);
-    else
-      return;
+      await updateContent(partsURL, wordFrequency, data.wordFrequency);
+
+    void 0;
   } catch (ex) {
     logger(observer.name, FILE_NAME, arguments);
     writeErrors(ex);
@@ -130,6 +133,8 @@ const onMessage = async function (req, sender) {
     const wordFrequency = JSON.parse(data);
 
     await observer(wordFrequency, partsURL);
+
+    void 0;
   } catch (ex) {
     logger(onMessage.name, FILE_NAME, arguments);
     writeErrors(ex);

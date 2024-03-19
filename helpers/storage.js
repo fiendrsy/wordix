@@ -121,15 +121,28 @@ export const save = async function (data, key) {
   }
 };
 
-export const createOptions = function (wordFrequency, data, partsURL) {
-  if (!wordFrequency || !partsURL) {
-    logger(createOptions.name, FILE_NAME, { arguments });
-    writeErrors(wordFrequency, partsURL);
+export const createOptions = async function (partsURL, wordFrequency, wordFrequencyByPath) {
+  if (!partsURL || partsURL.constructor !== Object) {
+    logger(createOptions.name, FILE_NAME, arguments);
+    writeErrors(partsURL);
 
     return null;
   }
   try {
-    const { path, thirdDomain } = partsURL;
+    const { path, thirdDomain, secondDomain } = partsURL;
+
+    const data = await read(secondDomain);
+
+    if (!wordFrequency) {
+      if (data) {
+        wordFrequency = data.wordFrequency;
+      } else {
+        logger(createOptions.name, FILE_NAME, arguments);
+        writeErrors(wordFrequency);
+
+        return null;
+      }
+    }
 
     const createdAt = data
       ? data.createdAt
@@ -139,13 +152,17 @@ export const createOptions = function (wordFrequency, data, partsURL) {
       ? [...data.selectedWords]
       : [];
 
-    const paths = data
-      ? [...data.paths, path]
-      : [path];
-
     const thirdDomains = data
       ? [...data.thirdDomains, thirdDomain]
       : [thirdDomain];
+
+    const paths = new Map(data
+      ? [...data.paths]
+      : []
+    );
+
+    if (wordFrequencyByPath || !data)
+      paths.set(path, wordFrequencyByPath || wordFrequency);
 
     const options = {
       createdAt,

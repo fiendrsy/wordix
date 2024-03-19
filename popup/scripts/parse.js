@@ -36,9 +36,9 @@ const prepareWordFrequency = (wordFrequency, data) => {
   }
 };
 
-const addSelectedWordToStorage = async function (word, data, partsURL) {
+const addSelectedWordToStorage = async function (word, partsURL) {
   try {
-    const options = storage.createOptions(data.wordFrequency, data, partsURL);
+    const options = await storage.createOptions(partsURL);
     options.selectedWords.push(word);
 
     await storage.save(options, partsURL.secondDomain);
@@ -51,13 +51,13 @@ const addSelectedWordToStorage = async function (word, data, partsURL) {
 };
 
 // Event handler that triggers when a word is selected
-const onSelectWord = async function (ev, data, partsURL) {
+const onSelectWord = async function (ev, partsURL) {
   try {
     // ev.target is equals input(type: checkbox) element
     const li = ev.target.parentNode;
     const [word] = li.innerText.split(" ");
 
-    await addSelectedWordToStorage(word, data, partsURL);
+    await addSelectedWordToStorage(word, partsURL);
 
     li.remove();
 
@@ -77,7 +77,7 @@ export const onParse = async function (ev, tab, partsURL) {
     if (!data)
       return;
 
-    const wordFrequency = data.wordFrequency;
+    const wordFrequency = data.paths.get(partsURL.path);
 
     logger(onParse.name, FILE_NAME, {
       arguments,
@@ -115,7 +115,7 @@ export const onParse = async function (ev, tab, partsURL) {
         li.append(label);
         parsedWords.append(li);
 
-        dom.addLis(checkbox, "change", onSelectWord, data, partsURL);
+        dom.addLis(checkbox, "change", onSelectWord, partsURL);
 
         void 0;
       } catch (ex) {
