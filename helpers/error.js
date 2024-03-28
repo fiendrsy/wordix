@@ -34,6 +34,6 @@ export const writeErrors = (...reasons) => {
       return;
     }
 
-    console.info(reason);
+    console.info(reason, ErrorMessages.EXTRA_VALUE);
   });
 };

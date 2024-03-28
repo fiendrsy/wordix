@@ -52,15 +52,15 @@ export const qSl = (sl, all = false) => {
     return document.querySelector(sl);
 };
 
-export const cEl = (el) => {
-  if (typeof el !== "string" || !HTML_TAGS.has(el)) {
-    logger(cEl.name, FILE_NAME, { el });
-    writeErrors(el);
+export const cEl = (tag) => {
+  if (typeof tag !== "string" || !HTML_TAGS.has(tag)) {
+    logger(cEl.name, FILE_NAME, { el: tag });
+    writeErrors(tag);
 
     return null;
   }
 
-  return document.createElement(el);
+  return document.createElement(tag);
 };
 
 export const gVal = (sl) => {

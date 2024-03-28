@@ -18,9 +18,10 @@ const popup = async function () {
     const tab = await tabs.getActive();
     const partsURL = url.composeParts(tab.url);
 
-    logger(popup.name, FILE_NAME, { arguments, partsURL });
+    logger(popup.name, FILE_NAME, arguments, partsURL);
 
-    if (!partsURL) return;
+    if (!partsURL)
+      return;
 
     printHostname(partsURL.hostname);
 
