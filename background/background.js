@@ -105,9 +105,11 @@ const observer = async function (wordFrequency, partsURL) {
 
 const onMessage = async function (req, sender) {
   try {
+    const SENDER_NAME = "word_frequency";
+
     const { from, data } = req;
 
-    if (!from || !data || from !== "INJECT_SCRIPT") {
+    if (!from || !data || from !== SENDER_NAME) {
       logger(onMessage.name, FILE_NAME, arguments, from, data);
       writeErrors(from, data);
 

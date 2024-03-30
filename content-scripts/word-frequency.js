@@ -1,5 +1,5 @@
 (function () {
-  const DELAY = 2500;
+  const DELAY_SECOND = 2500;
 
   // Timeout required to run the script after all other scripts on the page
   setTimeout(() => {
@@ -18,6 +18,8 @@
       "has", "it’s", "its", "it's", "it", "not", "is", "he", "do", "you",
 		  "can", "be", "if", "no", "are"
     ]);
+
+    const SENDER_NAME = "word_frequency";
 
     const text = document.body.innerText;
 
@@ -78,13 +80,13 @@
 
     const message = {
       data: JSON.stringify(calculateWordFrequency()),
-      from: "INJECT_SCRIPT",
+      from: SENDER_NAME,
     }
 
     browser.runtime.sendMessage("", message);
 
     void 0;
-  }, DELAY);
+  }, DELAY_SECOND);
 
   void 0;
 })();
