@@ -26,7 +26,7 @@ const validateValues = (values) => {
       const result = validateValues(value);
 
      /**
-       If the result length is not equal to the startLen var,
+       If the result length is not equal to startLen var,
        it means the value is not valid
      **/
       return result.length === startLen;

@@ -15,6 +15,7 @@ export const ErrorMessages = {
   STACK: "Stack:",
   DETAILS: "Error details:",
   WRONG_VALUE: "<- Wrong value",
+  EXTRA_VALUE: "<- Extra value from error"
 };
 
 export const FragmentsURL = {
