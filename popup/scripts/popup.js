@@ -12,7 +12,6 @@ import { writeErrors } from "../../helpers/error.js";
 // The current file name needed for logger
 const FILE_NAME = "popup.js";
 
-// The function is fire when DOM is loaded (means extension dom)
 const popup = async function () {
   try {
     const tab = await tabs.getActive();
@@ -20,19 +19,20 @@ const popup = async function () {
 
     logger(popup.name, FILE_NAME, arguments, partsURL);
 
-    if (!partsURL)
-      return;
+    if (partsURL) {
+      printHostname(partsURL.hostname);
 
-    printHostname(partsURL.hostname);
+      for (let s of ["#search-word__input", "#min-repeats__input"]) {
+        dom.addLis(s, "input", onSession, tab, partsURL);
+      }
 
-    dom.addLis(".parse-button", "click", onParse, tab, partsURL);
-    dom.addLis("#search-word__input", "input", onParse, tab, partsURL);
-    dom.addLis("#min-repeats__input", "input", onParse, tab, partsURL);
-    dom.addLis(".upload-button", "click", onSession);
-    dom.addLis("#session-min-repeats", "input", onSession);
-    dom.addLis("#session-limit-words", "input", onSession);
-    dom.addLis("#session-by-site", "input", onSession);
-    dom.addLis("#session-search-word", "input", onSession);
+      for (let s of ["#session-min-repeats", "#session-limit-words", "#session-by-site", "#session-search-word"]) {
+        dom.addLis(s, "input", onSession);
+      }
+
+      dom.addLis(".parse-button", "click", onParse, tab, partsURL);
+      dom.addLis(".upload-button", "click", onSession);
+    }
 
     void 0;
   } catch (ex) {
