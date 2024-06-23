@@ -1,5 +1,5 @@
 (function () {
-  const DELAY_SECOND = 2500;
+  const DELAY_MS = 2500;
 
   // Timeout required to run the script after all other scripts on the page
   setTimeout(() => {
@@ -86,7 +86,7 @@
     browser.runtime.sendMessage("", message);
 
     void 0;
-  }, DELAY_SECOND);
+  }, DELAY_MS);
 
   void 0;
 })();
